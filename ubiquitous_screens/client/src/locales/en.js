@@ -35,5 +35,14 @@ export default {
         'ac ante ipsum primis in faucibus. Morbi eu pharetra risus, nec viverra ante. Nunc in dignissim justo. Nunc elementum,' +
         'justo nec tempus suscipit, ex mi mollis augue, at accumsan sem turpis eget ex. Cras rutrum nisl et varius pulvinar.'
     }
+  },
+  contact: {
+    title: 'Contact',
+    form: {
+      fullName: 'Full name',
+      email: 'Email',
+      message: 'Message',
+      submit: 'Submit'
+    }
   }
 };
