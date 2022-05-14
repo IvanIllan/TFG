@@ -3,16 +3,11 @@ import { createTheme } from '@mui/material/styles';
 const themeOptions = {
   palette: {
     type: 'light',
-    primary: {
-      main: '#107a79'
-    },
+    primary: { main: '#2196f3' },
     light: { main: '#fff' },
-    secondary: {
-      main: '#441d38'
-    },
-    warning: {
-      main: '#ff9800'
-    }
+    secondary: { main: '#441d38' },
+    ternary: { main: '#fed8a3' },
+    warning: { main: '#ff9800' }
   },
   typography: {
     button: {
