@@ -13,12 +13,13 @@ import Button from '@mui/material/Button';
 import { ThemeProvider } from '@mui/material/styles';
 // Components
 import Header from '../../components/header';
+import Signup from '../../pages/signup';
 import PanelWithImage from '../../components/panel-with-image';
 // Others
 import enLocale from './locales/en.js';
 import Main from '../../themes/main';
 
-const homePages = ['Features', 'Contact'];
+const homePages = ['Features', 'Contact', 'Sign up'];
 const styles = {
   home: {
     content: {
@@ -233,6 +234,9 @@ export const Home = ({}) => {
         {home}
         {features}
         {contact}
+        <span id="signup">
+          <Signup />
+        </span>
       </Box>
     </ThemeProvider>
   );
