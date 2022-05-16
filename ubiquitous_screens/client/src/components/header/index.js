@@ -1,9 +1,9 @@
 import * as React from 'react';
 import { useState } from 'react';
-import PropTypes from 'prop-types';
 import AnchorLink from 'react-anchor-link-smooth-scroll';
-
+import { useLocation, useResolvedPath, useMatch, Link } from 'react-router-dom';
 import LogoImg from '../../pages/home/images/logo.png';
+// UI components
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
 import Toolbar from '@mui/material/Toolbar';
@@ -14,26 +14,85 @@ import MenuIcon from '@mui/icons-material/Menu';
 import Button from '@mui/material/Button';
 import MenuItem from '@mui/material/MenuItem';
 import Stack from '@mui/material/Stack';
+// Components
+import CustomLink from '../custom-link';
+import CustomAnchorLink from '../custom-anchor-link';
+// Others
+import routes from '../../routes';
+import sections from './sections.js';
+import pages from './pages.js';
 
-export const Header = ({ pages }) => {
+export const Header = () => {
   const [anchorElNav, setAnchorElNav] = useState(null);
   const handleOpenNavMenu = (event) => setAnchorElNav(event.currentTarget);
   const handleCloseNavMenu = () => setAnchorElNav(null);
-  const [pageSelected, setPageSelected] = useState(null);
+  const [sectionSelected, setSectionSelected] = useState(null);
+
+  const location = useLocation().pathname;
+  const currentSections = sections.public[location] || [];
+
+  const logo = () => {
+    if (currentSections.length > 0) {
+      return (
+        <AnchorLink
+          key="link-home"
+          href="#home"
+          offset="64"
+          onClick={() => setSectionSelected(null)}
+          style={{ textDecoration: 'none' }}
+        >
+          <img src={LogoImg} alt="logo" width="50px" />
+        </AnchorLink>
+      );
+    } else {
+      return (
+        <Link to={routes.home}>
+          <img src={LogoImg} alt="logo" width="50px" />
+        </Link>
+      );
+    }
+  };
+
+  const menuLinks = () => {
+    const color = 'primary';
+
+    const pagesMenu = pages.public.map((page) => {
+      const { id, title, path: to } = page;
+      const resolved = useResolvedPath(to);
+      const match = useMatch({ path: resolved.pathname, end: true });
+      const linkProps = {
+        title,
+        to,
+        active: !!match,
+        onClickHandler: () => setSectionSelected(null),
+        color
+      };
+
+      return <CustomLink key={`link-${id}`} {...linkProps} />;
+    });
+
+    const sectionsMenu = currentSections.map((section) => {
+      const { id, title, path: to } = section;
+      const linkProps = {
+        id,
+        title,
+        to,
+        active: sectionSelected === id,
+        onClickHandler: () => setSectionSelected(id),
+        color
+      };
+
+      return <CustomAnchorLink key={`anchor-link-${id}`} {...linkProps} />;
+    });
+
+    return sectionsMenu.concat(pagesMenu);
+  };
 
   return (
-    <AppBar position="fixed" color="light" elevation={0}>
+    <AppBar position="fixed" color="light" elevation={0} data-testid="header">
       <Toolbar disableGutters sx={{ padding: { xs: '0', md: '0px 40px' } }}>
         <Box sx={{ flexGrow: 1, padding: '5.5px 0', display: { xs: 'none', md: 'flex' } }}>
-          <AnchorLink
-            key="link-home"
-            href="#home"
-            offset="64"
-            onClick={() => setPageSelected(null)}
-            style={{ textDecoration: 'none' }}
-          >
-            <img src={LogoImg} alt="logo" width="50px" />
-          </AnchorLink>
+          {logo()}
         </Box>
         <Box sx={{ flexGrow: 1, flex: 1, display: { xs: 'flex', md: 'none' } }}>
           <IconButton
@@ -64,23 +123,42 @@ export const Header = ({ pages }) => {
               display: { xs: 'block', md: 'none' }
             }}
           >
-            {pages.map((page) => (
-              <MenuItem key={page} onClick={handleCloseNavMenu}>
+            {currentSections.map((section) => (
+              <MenuItem key={section.id} onClick={handleCloseNavMenu}>
                 <AnchorLink
                   offset="64"
-                  key={`link-${page.toLowerCase().replace(/\s/g, '')}`}
-                  href={`#${page.toLowerCase().replace(/\s/g, '')}`}
-                  onClick={() => setPageSelected(page)}
+                  key={`link-${section.id}`}
+                  href={section.path}
+                  onClick={() => setSectionSelected(section.id)}
                   style={{ textDecoration: 'none' }}
                 >
                   <Typography
                     textAlign="center"
                     color="primary"
-                    sx={{ fontWeight: pageSelected === page ? 'bold' : 'medium' }}
+                    sx={{ fontWeight: sectionSelected === section.id ? 'bold' : 'medium' }}
                   >
-                    {page}
+                    {section.title}
                   </Typography>
                 </AnchorLink>
+              </MenuItem>
+            ))}
+            {pages.public.map((page) => (
+              <MenuItem key={page.id} onClick={handleCloseNavMenu}>
+                <Link
+                  offset="64"
+                  key={`link-${page.id}`}
+                  to={page.path}
+                  onClick={() => setSectionSelected(page.id)}
+                  style={{ textDecoration: 'none' }}
+                >
+                  <Typography
+                    textAlign="center"
+                    color="primary"
+                    sx={{ fontWeight: sectionSelected === page.id ? 'bold' : 'medium' }}
+                  >
+                    {page.title}
+                  </Typography>
+                </Link>
               </MenuItem>
             ))}
           </Menu>
@@ -92,41 +170,10 @@ export const Header = ({ pages }) => {
           alignItems="right"
           sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}
         >
-          {pages.map((page) => (
-            <AnchorLink
-              offset="64"
-              key={`link-${page.toLowerCase()}`}
-              href={`#${page.toLowerCase()}`}
-              onClick={() => setPageSelected(page)}
-              style={{ textDecoration: 'none' }}
-            >
-              <Button
-                key={page}
-                onClick={handleCloseNavMenu}
-                color="primary"
-                underline="none"
-                size="large"
-                sx={{
-                  fontWeight: pageSelected === page ? 'bold' : 'medium',
-                  padding: '7px 21px'
-                }}
-                variant={pageSelected === page ? 'outlined' : 'text'}
-              >
-                {page}
-              </Button>
-            </AnchorLink>
-          ))}
+          {menuLinks()}
         </Stack>
         <Box sx={{ flexGrow: 1, padding: '5.5px 0', display: { xs: 'flex', md: 'none' } }}>
-          <AnchorLink
-            key="link-home"
-            href="#home"
-            offset="64"
-            onClick={() => setPageSelected(null)}
-            style={{ textDecoration: 'none' }}
-          >
-            <img src={LogoImg} alt="logo" width="50px" />
-          </AnchorLink>
+          {logo()}
         </Box>
       </Toolbar>
     </AppBar>
@@ -134,7 +181,3 @@ export const Header = ({ pages }) => {
 };
 
 export default Header;
-
-Header.propTypes = {
-  pages: PropTypes.array.isRequired
-};

@@ -39,6 +39,8 @@ export default {
   contact: {
     title: 'Contact',
     form: {
+      title: 'Have questions?',
+      subtitle: "Let's talk!",
       fullName: 'Full name',
       email: 'Email',
       message: 'Message',
