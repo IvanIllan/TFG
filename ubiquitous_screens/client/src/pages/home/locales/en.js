@@ -9,7 +9,7 @@ export default {
   features: {
     title: 'Features',
     featureOne: {
-      title: 'Remote status supervision',
+      title: 'System',
       description:
         'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque placerat, nulla vel hendrerit efficitur,' +
         'metus dolor pharetra ante, id tristique justo ex et dolor. Aenean sit amet mauris id purus volutpat pulvinar' +
@@ -18,7 +18,7 @@ export default {
         'justo nec tempus suscipit, ex mi mollis augue, at accumsan sem turpis eget ex. Cras rutrum nisl et varius pulvinar.'
     },
     featureTwo: {
-      title: 'Irrigation scheduling system',
+      title: 'system',
       description:
         'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque placerat, nulla vel hendrerit efficitur,' +
         'metus dolor pharetra ante, id tristique justo ex et dolor. Aenean sit amet mauris id purus volutpat pulvinar' +
@@ -27,7 +27,7 @@ export default {
         'justo nec tempus suscipit, ex mi mollis augue, at accumsan sem turpis eget ex. Cras rutrum nisl et varius pulvinar.'
     },
     featureThree: {
-      title: 'Self-sufficient system',
+      title: 'system',
       description:
         'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque placerat, nulla vel hendrerit efficitur,' +
         'metus dolor pharetra ante, id tristique justo ex et dolor. Aenean sit amet mauris id purus volutpat pulvinar' +
