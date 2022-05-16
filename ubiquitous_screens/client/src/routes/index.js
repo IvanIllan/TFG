@@ -1,5 +1,6 @@
 export default {
   home: '/',
   signup: '/signup',
-  signin: '/signin'
+  signin: '/signin',
+  resetPassword: '/reset-password'
 };

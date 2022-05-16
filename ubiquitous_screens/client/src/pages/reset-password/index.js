@@ -1,6 +1,4 @@
-
-import signinImg from './images/sign-up.png';
-import { Link } from 'react-router-dom';
+import resetPasswordImg from './images/reset-password.png';
 // UI components
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
@@ -12,9 +10,8 @@ import PanelWithImage from '../../components/panel-with-image';
 // Others
 import enLocale from './locales/en.js';
 import Main from '../../themes/main';
-import routes from '../../routes';
 
-const signInForm = (
+const resetPasswordForm = (
   <Grid container direction="row" justifyContent="center" alignItems="stretch" pt="40px">
     <Grid item direction="column" justifyContent="center" xs={12} md={10}>
       <Box
@@ -46,18 +43,6 @@ const signInForm = (
           {enLocale.form.submit}
         </Button>
       </Box>
-      <Box pb="60px">
-        <Link
-          style={{
-            color: `${Main.palette.primary.main}`,
-            textDecoration: 'none',
-            fontWeight: 'bold'
-          }}
-          to={routes.resetPassword}
-        >
-          {enLocale.forgotPassword}
-        </Link>
-      </Box>
     </Grid>
   </Grid>
 );
@@ -67,10 +52,11 @@ export const Signin = ({}) => {
     <ThemeProvider theme={Main}>
       <Box sx={{ mt: { xs: 5, sm: 8 } }}>
         <PanelWithImage
-          image={signinImg}
+          image={resetPasswordImg}
           title={enLocale.title}
           subtitle={enLocale.subtitle}
-          children={signInForm}
+          description={enLocale.description}
+          children={resetPasswordForm}
           styles={{ textAlign: 'center' }}
         />
       </Box>
