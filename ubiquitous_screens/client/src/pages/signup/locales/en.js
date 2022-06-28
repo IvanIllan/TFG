@@ -3,7 +3,8 @@ export default {
   subtitle: "Let's join the team!",
   forgotPassword: 'Forgot password?',
   form: {
-    fullName: 'Full name',
+    firstName: 'First name',
+    lastName: 'Last name',
     email: 'Email',
     password: 'Password',
     passwordConfirmation: 'Password confirmation',
