@@ -8,6 +8,8 @@ import Signin from './pages/signin';
 import Signup from './pages/signup';
 import Header from './components/header';
 import ResetPassword from './pages/reset-password';
+import Screens from './pages/screens';
+import Items from './pages/items';
 // Others
 import Main from './themes/main';
 import routes from './routes';
@@ -25,6 +27,8 @@ function App() {
             <Route path={routes.signin} exact element={<Signin />} />
             <Route path={routes.signup} exact element={<Signup />} />
             <Route path={routes.resetPassword} exact element={<ResetPassword />} />
+            <Route path={routes.screens} exact element={<Screens />} />
+            <Route path={routes.items} exact element={<Items />} />
           </Routes>
         </BrowserRouter>
       </ThemeProvider>
