@@ -1,0 +1,10 @@
+.draggable-container {
+  display: flex;
+  flex-wrap: wrap;
+  width: 90%;
+  height: 70vh;
+  margin: 20px auto;
+  padding: 20px;
+  border: 2px dashed gray;
+  overflow: scroll;
+}

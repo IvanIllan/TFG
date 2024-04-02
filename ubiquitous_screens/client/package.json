@@ -17,6 +17,7 @@
     "react": "^17.0.2",
     "react-anchor-link-smooth-scroll": "^1.0.12",
     "react-dom": "^17.0.2",
+    "react-draggable": "^4.4.5",
     "react-hook-form": "^7.25.0",
     "react-hook-form-mui": "^3.0.0",
     "react-router-dom": "^6.2.1",
