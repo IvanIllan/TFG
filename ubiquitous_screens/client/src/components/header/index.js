@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { useAuth } from '../../AuthContext';
 import { useState } from 'react';
 import AnchorLink from 'react-anchor-link-smooth-scroll';
 import { useLocation, useResolvedPath, useMatch, Link } from 'react-router-dom';
@@ -27,6 +28,7 @@ export const Header = () => {
   const handleOpenNavMenu = (event) => setAnchorElNav(event.currentTarget);
   const handleCloseNavMenu = () => setAnchorElNav(null);
   const [sectionSelected, setSectionSelected] = useState(null);
+  const { isAuthenticated, signOut } = useAuth();
 
   const location = useLocation().pathname;
   const currentSections = sections.public[location] || [];
@@ -53,7 +55,7 @@ export const Header = () => {
     }
   };
 
-  const menuLinks = () => {
+    const menuLinks = () => {
     const color = 'primary';
 
     const pagesMenu = pages.public.map((page) => {
@@ -86,6 +88,54 @@ export const Header = () => {
     });
 
     return sectionsMenu.concat(pagesMenu);
+  };
+
+  const homeLinks = () => {
+    const color = 'primary';
+
+    const pagesMenu = pages.private.map((page) => {
+      const { id, title, path: to } = page;
+      const resolved = useResolvedPath(to);
+      const match = useMatch({ path: resolved.pathname, end: true });
+      const linkProps = {
+        title,
+        to,
+        active: !!match,
+        onClickHandler: () => setSectionSelected(null),
+        color
+      };
+
+      return <CustomLink key={`link-${id}`} {...linkProps} />;
+    });
+
+    const sectionsMenu = currentSections.map((section) => {
+      const { id, title, path: to } = section;
+      const linkProps = {
+        id,
+        title,
+        to,
+        active: sectionSelected === id,
+        onClickHandler: () => setSectionSelected(id),
+        color
+      };
+
+      return <CustomAnchorLink key={`anchor-link-${id}`} {...linkProps} />;
+    });
+
+    return sectionsMenu.concat(pagesMenu);
+  };
+
+  const loggedInLinks = () => {
+    return isAuthenticated ? (
+      <>
+        {console.log("autentifica bien")}
+        {homeLinks()}
+      </>
+    ) : (
+      <>
+        {menuLinks()}
+      </>
+    );
   };
 
   return (
@@ -170,7 +220,7 @@ export const Header = () => {
           alignItems="right"
           sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}
         >
-          {menuLinks()}
+          {loggedInLinks()}
         </Stack>
         <Box sx={{ flexGrow: 1, padding: '5.5px 0', display: { xs: 'flex', md: 'none' } }}>
           {logo()}

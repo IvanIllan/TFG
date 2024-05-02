@@ -130,7 +130,6 @@ export const Items = ({}) => {
         direction="row"
         alignItems="left"
         justifyContent="left"
-        alignItems="stretch"
       >
         {form}
         {console.log(message)}
@@ -140,7 +139,6 @@ export const Items = ({}) => {
         direction="row"
         alignItems="left"
         justifyContent="left"
-        alignItems="stretch"
       >
         <Box>
           <Card sx={{ width: width, height: height, mt: { xs: 0, sm: 11 }}}>
