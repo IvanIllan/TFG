@@ -1,6 +1,4 @@
-
-import React from 'react';
-import { useAuth } from '../../AuthContext';
+import React, { useState } from 'react';
 import signinImg from './images/sign-up.png';
 import { Link, useNavigate } from 'react-router-dom';
 // UI components
@@ -15,19 +13,35 @@ import PanelWithImage from '../../components/panel-with-image';
 import enLocale from './locales/en.js';
 import Main from '../../themes/main';
 import routes from '../../routes';
+// Utils
+import httpClient from '../../utils/httpClient';
 
 export const Signin = () => {
   const navigate = useNavigate();
-  const { signIn } = useAuth();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
-    // Aquí iría la lógica real de inicio de sesión, que comunicaría con el backend
-    signIn(); // Esto es solo para fines de demostración
-    navigate(routes.screens);
+
+    try {
+      const response = await httpClient.post('/login', {
+        user: {
+          email: email,
+          password: password,
+        }
+      });
+      
+      const token = response.headers['authorization'].split(' ')[1]; // Suponiendo que el token viene en el header 'Authorization'
+      localStorage.setItem('token', token); // Guarda el token en el localStorage
+      
+      navigate(routes.screens); // Redirige a la pantalla principal
+    } catch (error) {
+      console.error('Error al iniciar sesión:', error);
+      // Maneja el error, muestra un mensaje al usuario, etc.
+    }
   };
 
-  // Mueve el componente de formulario dentro de Signin para manejar los eventos
   const signInForm = (
     <Grid container direction="row" justifyContent="center" alignItems="stretch" pt="40px">
       <Grid item direction="column" justifyContent="center" xs={12} md={10}>
@@ -41,14 +55,24 @@ export const Signin = () => {
           noValidate
           autoComplete="off"
         >
-          <TextField required id="email" label={`${enLocale.form.email}`} color="secondary" focused />
+          <TextField 
+            required 
+            id="email" 
+            label={`${enLocale.form.email}`} 
+            color="secondary" 
+            focused 
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
           <TextField
             required
             id="password"
             label={`${enLocale.form.password}`}
             color="secondary"
             focused
-            type="password" // Asegúrate de que el campo de contraseña sea de tipo "password"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
           />
 
           <Button
@@ -86,7 +110,7 @@ export const Signin = () => {
           subtitle={enLocale.subtitle}
           styles={{ textAlign: 'center' }}
         >
-          {signInForm} {/* Coloca el formulario como children aquí */}
+          {signInForm}
         </PanelWithImage>
       </Box>
     </ThemeProvider>
