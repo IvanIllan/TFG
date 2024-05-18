@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import signupImg from './images/sign-up.png';
-import axios from 'axios';
+import httpClient from '../../utils/httpClient';
 // UI components
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
@@ -13,18 +13,14 @@ import PanelWithImage from '../../components/panel-with-image';
 import enLocale from './locales/en.js';
 import Main from '../../themes/main';
 import { fieldElementProps } from '../../utils';
-
 import { FormContainer, TextFieldElement, PasswordElement } from 'react-hook-form-mui';
-
-const httClient = axios.create({
-  baseURL: 'http://127.0.0.1:3001/',
-  timeout: 1000
-});
 
 export const Signup = ({}) => {
   const [errorMessage, setErrorMessage] = useState(undefined);
+  const [successMessage, setSuccessMessage] = useState(undefined);
   const [errors, setErrors] = useState({});
   const formLocales = enLocale.form;
+
   const submit = (data) => {
     const { firstName, lastName, email, password, passwordConfirmation } = data;
     const httpParams = {
@@ -35,15 +31,19 @@ export const Signup = ({}) => {
       password_confirmation: passwordConfirmation
     };
 
-    httClient
+    httpClient
       .post('signup', { ...httpParams, locale: 'en' })
-      .then(function (response) {
-        // redirect to success
+      .then(function () {
+        setSuccessMessage('Registration successful! Please check your email to confirm your account.');
+        setErrors({});
       })
       .catch(function (error) {
-        const { message: responseMessage, errors: responseErrors } = error.response.data;
-        setErrorMessage(responseMessage);
-        setErrors(responseErrors);
+        console.error('Error response:', error.response);
+        if (error.response && error.response.data && error.response.data.errors) {
+          setErrors(error.response.data.errors);
+        } else {
+          setErrorMessage('An unexpected error occurred. Please try again.');
+        }
       });
   };
 
@@ -65,14 +65,41 @@ export const Signup = ({}) => {
                 {errorMessage}
               </Alert>
             )}
+            {successMessage && (
+              <Alert severity="success" sx={{ mt: 1, mb: 1 }}>
+                {successMessage}
+              </Alert>
+            )}
 
-            <TextFieldElement {...fieldElementProps('firstName', errors, formLocales)} required />
-            <TextFieldElement {...fieldElementProps('lastName', errors, formLocales)} required />
-            <TextFieldElement {...fieldElementProps('email', errors, formLocales)} required />
-            <PasswordElement {...fieldElementProps('password', errors, formLocales)} required />
+            <TextFieldElement
+              {...fieldElementProps('firstName', errors, formLocales)}
+              required
+              error={!!errors.first_name}
+              helperText={errors.first_name?.join(', ')}
+            />
+            <TextFieldElement
+              {...fieldElementProps('lastName', errors, formLocales)}
+              required
+              error={!!errors.last_name}
+              helperText={errors.last_name?.join(', ')}
+            />
+            <TextFieldElement
+              {...fieldElementProps('email', errors, formLocales)}
+              required
+              error={!!errors.email}
+              helperText={errors.email?.join(', ')}
+            />
+            <PasswordElement
+              {...fieldElementProps('password', errors, formLocales)}
+              required
+              error={!!errors.password}
+              helperText={errors.password?.join(', ')}
+            />
             <PasswordElement
               {...fieldElementProps('passwordConfirmation', errors, formLocales)}
               required
+              error={!!errors.password_confirmation}
+              helperText={errors.password_confirmation?.join(', ')}
             />
 
             <Button

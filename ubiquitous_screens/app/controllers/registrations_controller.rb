@@ -2,24 +2,36 @@ class RegistrationsController < Devise::RegistrationsController
   respond_to :json
 
   def create
-    byebug
-    build_resource(user_params)
+    build_resource(sign_up_params)
+
     resource.save
-    render json: resource, status: :created
+    if resource.persisted?
+      if resource.active_for_authentication?
+        sign_up(resource_name, resource)
+        render json: resource, status: :created
+      else
+        expire_data_after_sign_in!
+        render json: { message: "signed_up_but_#{resource.inactive_message}" }, status: :ok
+      end
+    else
+      clean_up_passwords resource
+      set_minimum_password_length
+      puts "#{format_errors(resource.errors)}"
+      render json: { errors: format_errors(resource.errors) }, status: :unprocessable_entity
+    end
   end
 
   private
 
-  def user_params
-    params.permit(
-      :first_name,
-      :last_name,
-      :email,
-      :password,
-      :password_confirmation,
-      :country_code,
-      :timezone,
-      :lang
-    )
+  def sign_up_params
+    params.permit(:first_name, :last_name, :email, :password, :password_confirmation)
+  end
+
+  def format_errors(errors)
+    formatted_errors = {}
+    errors.messages.each do |attribute, messages|
+      formatted_errors[attribute] = messages
+    end
+    formatted_errors
   end
 end

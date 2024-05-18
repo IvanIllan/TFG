@@ -1,8 +1,5 @@
-import * as React from 'react';
-import { useAuth } from '../../AuthContext';
-import { useState } from 'react';
-import AnchorLink from 'react-anchor-link-smooth-scroll';
-import { useLocation, useResolvedPath, useMatch, Link } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import LogoImg from '../../pages/home/images/logo.png';
 // UI components
 import AppBar from '@mui/material/AppBar';
@@ -13,136 +10,78 @@ import Typography from '@mui/material/Typography';
 import Menu from '@mui/material/Menu';
 import MenuIcon from '@mui/icons-material/Menu';
 import Button from '@mui/material/Button';
-import MenuItem from '@mui/material/MenuItem';
 import Stack from '@mui/material/Stack';
-// Components
-import CustomLink from '../custom-link';
-import CustomAnchorLink from '../custom-anchor-link';
 // Others
 import routes from '../../routes';
 import sections from './sections.js';
 import pages from './pages.js';
 
-export const Header = () => {
+const Header = () => {
   const [anchorElNav, setAnchorElNav] = useState(null);
+  const navigate = useNavigate();
+  const location = useLocation().pathname;
+  const token = localStorage.getItem('token');
+  const isAuthenticated = !!token;
+
   const handleOpenNavMenu = (event) => setAnchorElNav(event.currentTarget);
   const handleCloseNavMenu = () => setAnchorElNav(null);
-  const [sectionSelected, setSectionSelected] = useState(null);
-  const { isAuthenticated, signOut } = useAuth();
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    navigate(routes.signin);
+  };
 
-  const location = useLocation().pathname;
-  const currentSections = sections.public[location] || [];
+  const logo = (
+    <Link to={routes.home}>
+      <img src={LogoImg} alt="logo" width="50px" />
+    </Link>
+  );
 
-  const logo = () => {
-    if (currentSections.length > 0) {
+  const renderLinks = (links) => {
+    return links.map(({ id, title, path }) => {
+      const isActive = location === path;
+      const linkProps = {
+        key: id,
+        to: path,
+        style: { textDecoration: 'none', color: isActive ? 'primary' : 'inherit' },
+        onClick: handleCloseNavMenu
+      };
+
       return (
-        <AnchorLink
-          key="link-home"
-          href="#home"
-          offset="64"
-          onClick={() => setSectionSelected(null)}
-          style={{ textDecoration: 'none' }}
-        >
-          <img src={LogoImg} alt="logo" width="50px" />
-        </AnchorLink>
-      );
-    } else {
-      return (
-        <Link to={routes.home}>
-          <img src={LogoImg} alt="logo" width="50px" />
+        <Link {...linkProps}>
+          <Typography
+            textAlign="center"
+            color="primary"
+            sx={{ fontWeight: isActive ? 'bold' : 'medium' }}
+          >
+            {title}
+          </Typography>
         </Link>
       );
-    }
+    });
   };
 
-    const menuLinks = () => {
-    const color = 'primary';
+  const sectionsLinks = renderLinks(sections.public[location] || []);
+  const publicPageLinks = renderLinks(pages.public);
+  const privatePageLinks = renderLinks(pages.private);
 
-    const pagesMenu = pages.public.map((page) => {
-      const { id, title, path: to } = page;
-      const resolved = useResolvedPath(to);
-      const match = useMatch({ path: resolved.pathname, end: true });
-      const linkProps = {
-        title,
-        to,
-        active: !!match,
-        onClickHandler: () => setSectionSelected(null),
-        color
-      };
+  const loggedInLinks = (
+    <>
+      {privatePageLinks}
+      <Button color="primary" onClick={handleLogout}>Logout</Button>
+    </>
+  );
 
-      return <CustomLink key={`link-${id}`} {...linkProps} />;
-    });
-
-    const sectionsMenu = currentSections.map((section) => {
-      const { id, title, path: to } = section;
-      const linkProps = {
-        id,
-        title,
-        to,
-        active: sectionSelected === id,
-        onClickHandler: () => setSectionSelected(id),
-        color
-      };
-
-      return <CustomAnchorLink key={`anchor-link-${id}`} {...linkProps} />;
-    });
-
-    return sectionsMenu.concat(pagesMenu);
-  };
-
-  const homeLinks = () => {
-    const color = 'primary';
-
-    const pagesMenu = pages.private.map((page) => {
-      const { id, title, path: to } = page;
-      const resolved = useResolvedPath(to);
-      const match = useMatch({ path: resolved.pathname, end: true });
-      const linkProps = {
-        title,
-        to,
-        active: !!match,
-        onClickHandler: () => setSectionSelected(null),
-        color
-      };
-
-      return <CustomLink key={`link-${id}`} {...linkProps} />;
-    });
-
-    const sectionsMenu = currentSections.map((section) => {
-      const { id, title, path: to } = section;
-      const linkProps = {
-        id,
-        title,
-        to,
-        active: sectionSelected === id,
-        onClickHandler: () => setSectionSelected(id),
-        color
-      };
-
-      return <CustomAnchorLink key={`anchor-link-${id}`} {...linkProps} />;
-    });
-
-    return sectionsMenu.concat(pagesMenu);
-  };
-
-  const loggedInLinks = () => {
-    return isAuthenticated ? (
-      <>
-        {console.log("autentifica bien")}
-        {homeLinks()}
-      </>
-    ) : (
-      <>
-        {menuLinks()}
-      </>
-    );
-  };
+  const loggedOutLinks = (
+    <>
+      {publicPageLinks}
+    </>
+  );
 
   return (
     <AppBar position="fixed" color="light" elevation={0} data-testid="header">
       <Toolbar disableGutters sx={{ padding: { xs: '0', md: '0px 40px' } }}>
         <Box sx={{ flexGrow: 1, padding: '5.5px 0', display: { xs: 'none', md: 'flex' } }}>
-          {logo()}
+          {logo}
         </Box>
         <Box sx={{ flexGrow: 1, flex: 1, display: { xs: 'flex', md: 'none' } }}>
           <IconButton
@@ -158,72 +97,22 @@ export const Header = () => {
           <Menu
             id="menu-appbar"
             anchorEl={anchorElNav}
-            anchorOrigin={{
-              vertical: 'bottom',
-              horizontal: 'left'
-            }}
+            anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
             keepMounted
-            transformOrigin={{
-              vertical: 'top',
-              horizontal: 'left'
-            }}
+            transformOrigin={{ vertical: 'top', horizontal: 'left' }}
             open={Boolean(anchorElNav)}
             onClose={handleCloseNavMenu}
-            sx={{
-              display: { xs: 'block', md: 'none' }
-            }}
+            sx={{ display: { xs: 'block', md: 'none' } }}
           >
-            {currentSections.map((section) => (
-              <MenuItem key={section.id} onClick={handleCloseNavMenu}>
-                <AnchorLink
-                  offset="64"
-                  key={`link-${section.id}`}
-                  href={section.path}
-                  onClick={() => setSectionSelected(section.id)}
-                  style={{ textDecoration: 'none' }}
-                >
-                  <Typography
-                    textAlign="center"
-                    color="primary"
-                    sx={{ fontWeight: sectionSelected === section.id ? 'bold' : 'medium' }}
-                  >
-                    {section.title}
-                  </Typography>
-                </AnchorLink>
-              </MenuItem>
-            ))}
-            {pages.public.map((page) => (
-              <MenuItem key={page.id} onClick={handleCloseNavMenu}>
-                <Link
-                  offset="64"
-                  key={`link-${page.id}`}
-                  to={page.path}
-                  onClick={() => setSectionSelected(page.id)}
-                  style={{ textDecoration: 'none' }}
-                >
-                  <Typography
-                    textAlign="center"
-                    color="primary"
-                    sx={{ fontWeight: sectionSelected === page.id ? 'bold' : 'medium' }}
-                  >
-                    {page.title}
-                  </Typography>
-                </Link>
-              </MenuItem>
-            ))}
+            {sectionsLinks}
+            {isAuthenticated ? loggedInLinks : loggedOutLinks}
           </Menu>
         </Box>
-        <Stack
-          direction="row"
-          spacing={3}
-          justifyContent="right"
-          alignItems="right"
-          sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}
-        >
-          {loggedInLinks()}
+        <Stack direction="row" spacing={3} justifyContent="right" alignItems="right" sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
+          {isAuthenticated ? loggedInLinks : loggedOutLinks}
         </Stack>
         <Box sx={{ flexGrow: 1, padding: '5.5px 0', display: { xs: 'flex', md: 'none' } }}>
-          {logo()}
+          {logo}
         </Box>
       </Toolbar>
     </AppBar>
