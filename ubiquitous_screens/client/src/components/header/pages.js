@@ -6,7 +6,8 @@ export default {
     { id: 'signin', title: 'Sign in', path: routes.signin }
   ],
   private: [
-    { id: 'screens', title: 'Configurador', path: routes.screens },
-    { id: 'items', title: 'Creador de Objetos', path: routes.items } 
+    { id: 'items', title: 'Creador de Objetos', path: routes.items },
+    { id: 'createScreen', title: 'Crear Pantalla', path: routes.createScreen },
+    { id: 'updateScreen', title: 'Actualizar/Eliminar Pantalla', path: routes.updateScreen }
   ]
 };

@@ -6,6 +6,7 @@ import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
+import Typography from '@mui/material/Typography'; // Importa Typography para mostrar el mensaje de error
 import { ThemeProvider } from '@mui/material/styles';
 // Components
 import PanelWithImage from '../../components/panel-with-image';
@@ -20,6 +21,7 @@ export const Signin = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState(''); // Estado para el mensaje de error
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -34,11 +36,11 @@ export const Signin = () => {
       
       const token = response.headers['authorization'].split(' ')[1]; // Suponiendo que el token viene en el header 'Authorization'
       localStorage.setItem('token', token); // Guarda el token en el localStorage
-      
+      setError(''); // Resetea el mensaje de error
       navigate(routes.screens); // Redirige a la pantalla principal
     } catch (error) {
       console.error('Error al iniciar sesión:', error);
-      // Maneja el error, muestra un mensaje al usuario, etc.
+      setError('Invalid Email or Password'); // Establece el mensaje de error
     }
   };
 
@@ -84,6 +86,11 @@ export const Signin = () => {
           >
             {enLocale.form.submit}
           </Button>
+          {error && (
+            <Typography color="error" mt={2}>
+              {error}
+            </Typography>
+          )}
         </Box>
         <Box pb="60px">
           <Link

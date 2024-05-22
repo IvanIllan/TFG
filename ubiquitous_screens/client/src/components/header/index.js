@@ -13,8 +13,8 @@ import Button from '@mui/material/Button';
 import Stack from '@mui/material/Stack';
 // Others
 import routes from '../../routes';
-import sections from './sections.js';
-import pages from './pages.js';
+import sections from './sections';
+import pages from './pages';
 
 const Header = () => {
   const [anchorElNav, setAnchorElNav] = useState(null);
