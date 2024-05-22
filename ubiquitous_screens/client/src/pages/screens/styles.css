@@ -1,3 +1,4 @@
+/* styles.css */
 .draggable-container {
   display: flex;
   flex-wrap: wrap;
@@ -7,4 +8,81 @@
   padding: 20px;
   border: 2px dashed gray;
   overflow: scroll;
+}
+
+.screen-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+  margin-top: 80px; /* Ajustar espacio con la navbar */
+}
+
+.screen-header {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+.screen-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.screen-inputs {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.device-frame {
+  position: relative;
+  border: 16px solid #000;
+  background: #fff;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+  width: fit-content;
+  height: fit-content;
+}
+
+.screen {
+  position: relative;
+  border: none; /* El borde ya lo tiene el frame del dispositivo */
+  background-color: #f0f0f0;
+  overflow: hidden;
+}
+
+.draggable-item {
+  background-color: #90caf9;
+  border: 1px solid #000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: absolute;
+  cursor: move;
+  font-size: 10px;
+  text-align: center;
+}
+
+.draggable-item:hover {
+  transform: scale(1.05);
+}
+
+/* Nuevos estilos para el selector de elementos */
+.selector-container {
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+.selector-label {
+  font-size: 16px;
+  margin-bottom: 24px; /* Aumentar margen inferior */
+}
+
+.selector-select {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
 }
