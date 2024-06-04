@@ -10,10 +10,48 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2024_05_17_222353) do
+ActiveRecord::Schema.define(version: 2024_05_22_225814) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
+
+  create_table "company_groups", force: :cascade do |t|
+    t.string "brand"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+  end
+
+  create_table "factories", force: :cascade do |t|
+    t.string "address"
+    t.bigint "company_group_id", null: false
+    t.bigint "user_id", null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["company_group_id"], name: "index_factories_on_company_group_id"
+    t.index ["user_id"], name: "index_factories_on_user_id"
+  end
+
+  create_table "items", force: :cascade do |t|
+    t.integer "width", null: false
+    t.integer "high", null: false
+    t.string "categories", default: [], array: true
+    t.bigint "factory_id", null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["factory_id"], name: "index_items_on_factory_id"
+  end
+
+  create_table "screens", force: :cascade do |t|
+    t.string "name"
+    t.integer "width"
+    t.integer "high"
+    t.string "mac"
+    t.jsonb "html_structure"
+    t.bigint "factory_id", null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["factory_id"], name: "index_screens_on_factory_id"
+  end
 
   create_table "users", force: :cascade do |t|
     t.string "email", default: "", null: false
@@ -30,9 +68,16 @@ ActiveRecord::Schema.define(version: 2024_05_17_222353) do
     t.datetime "confirmed_at"
     t.datetime "confirmation_sent_at"
     t.string "unconfirmed_email"
+    t.bigint "company_group_id", default: 1, null: false
+    t.index ["company_group_id"], name: "index_users_on_company_group_id"
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["jti"], name: "index_users_on_jti", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end
 
+  add_foreign_key "factories", "company_groups"
+  add_foreign_key "factories", "users"
+  add_foreign_key "items", "factories"
+  add_foreign_key "screens", "factories"
+  add_foreign_key "users", "company_groups"
 end
