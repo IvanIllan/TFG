@@ -1,0 +1,13 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  direccion_fisica: MyString
+  identificador: MyString
+  company_group: one
+  user: one
+
+two:
+  direccion_fisica: MyString
+  identificador: MyString
+  company_group: two
+  user: two
