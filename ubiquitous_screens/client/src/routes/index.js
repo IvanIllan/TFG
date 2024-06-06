@@ -6,5 +6,9 @@ export default {
   screens: '/screens',
   items: '/items',
   createScreen: '/create-screen',
-  updateScreen: '/update-screen'
+  updateScreen: '/update-screen',
+  createItem: '/create-item',
+  updateItem: '/update-item',
+  manageScreens: '/manage-screens',
+  manageItems: '/manage-items'
 };

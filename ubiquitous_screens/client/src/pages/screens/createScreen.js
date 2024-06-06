@@ -135,7 +135,7 @@ const CreateScreen = () => {
       allItems.sort((a, b) => a.width * a.height - b.width * b.height);
       for (let i = 0; i < allItems.length; i++) {
         for (let x = 0; x <= screenSize.width - allItems[i].width; x += 10) {
-          for (let y = 0; y <= screenSize.height - allItems[i].height; y += 10) {
+          for (let y = 0; x <= screenSize.height - allItems[i].height; y += 10) {
             const tempItem = { ...allItems[i], left: x, top: y };
             if (!checkCollision(tempItem, allItems.filter((_, index) => index !== i))) {
               allItems[i] = tempItem;
@@ -197,59 +197,80 @@ const CreateScreen = () => {
     alert('Nueva pantalla guardada.');
   };
 
+  const exportLayout = () => {
+    const layoutData = items.map(({ id, left, top, width, height }) => ({
+      id,
+      position: { x: left, y: top },
+      size: { width, height }
+    }));
+
+    const layoutJSON = JSON.stringify(layoutData, null, 2);
+    console.log(layoutJSON);
+
+    const blob = new Blob([layoutJSON], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.download = 'layout.json';
+    link.href = url;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
   return (
-    <Paper elevation={3} className="screen-container" style={{ padding: '20px', background: '#fff', minHeight: '100vh' }}>
-      <div className="screen-header">
-        <div className="screen-inputs" style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
-          <TextField
-            label="Ancho de pantalla"
-            type="number"
-            name="width"
-            value={screenSize.width}
-            onChange={handleScreenSizeChange}
-            inputProps={{ min: 0 }}
-          />
-          <TextField
-            label="Alto de pantalla"
-            type="number"
-            name="height"
-            value={screenSize.height}
-            onChange={handleScreenSizeChange}
-            inputProps={{ min: 0 }}
-          />
-        </div>
-      </div>
-      <Autocomplete
-        multiple
-        options={availableItems}
-        getOptionLabel={(option) => option.text}
-        value={availableItems.filter(item => selectedItems.includes(item.id))}
-        onChange={handleAddItem}
-        style={{ minWidth: '250px', marginBottom: '20px' }}
-        renderInput={(params) => <TextField {...params} variant="outlined" label="Seleccionar Elemento" />}
-        renderTags={(value, getTagProps) =>
-          value.map((option, index) => (
-            <Chip
-              key={option.id}
-              label={option.text}
-              {...getTagProps({ index })}
-              onDelete={() => handleRemoveItem(option.id)}
+    <div className="container">
+      <Paper elevation={3} className="sidebar" style={{ padding: '20px', background: '#fff', height: 'calc(100vh - 64px)', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+        <div style={{ flexGrow: 1 }}>
+          <div className="screen-inputs" style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
+            <TextField
+              label="Ancho de pantalla"
+              type="number"
+              name="width"
+              value={screenSize.width}
+              onChange={handleScreenSizeChange}
+              inputProps={{ min: 0 }}
+              fullWidth
             />
-          ))
-        }
-      />
-      {restructureMessage && (
-        <div style={{ marginBottom: '20px', padding: '10px', background: '#f8d7da', color: '#721c24', border: '1px solid #f5c6cb', borderRadius: '4px' }}>
-          <p>Reestructuración requerida para acomodar el nuevo elemento.</p>
-          <Button variant="contained" color="primary" onClick={restructureItems} style={{ marginRight: '10px' }}>
-            Reestructurar y Añadir Elemento
+            <TextField
+              label="Alto de pantalla"
+              type="number"
+              name="height"
+              value={screenSize.height}
+              onChange={handleScreenSizeChange}
+              inputProps={{ min: 0 }}
+              fullWidth
+            />
+          </div>
+          <Autocomplete
+            multiple
+            options={availableItems}
+            getOptionLabel={(option) => option.text}
+            value={availableItems.filter(item => selectedItems.includes(item.id))}
+            onChange={handleAddItem}
+            renderInput={(params) => <TextField {...params} variant="outlined" label="Seleccionar Elemento" />}
+            renderTags={(value, getTagProps) =>
+              value.map((option, index) => (
+                <Chip
+                  key={option.id}
+                  label={option.text}
+                  {...getTagProps({ index })}
+                  onDelete={() => handleRemoveItem(option.id)}
+                />
+              ))
+            }
+            fullWidth
+            style={{ marginBottom: '20px' }}
+          />
+        </div>
+        <div>
+          <Button variant="contained" color="primary" onClick={saveNewScreen} fullWidth>
+            Guardar Nueva Pantalla
           </Button>
-          <Button variant="outlined" color="secondary" onClick={handleManualIntervention}>
-            Proceder con la Intervención Manual
+          <Button variant="contained" color="secondary" onClick={exportLayout} fullWidth style={{ marginTop: '10px' }}>
+            Exportar Diseño
           </Button>
         </div>
-      )}
-      <div className="device-frame" style={{ marginBottom: '20px' }}>
+      </Paper>
+      <div className="device-frame" style={{ marginLeft: '20px' }}>
         <Box
           className="screen"
           style={{
@@ -288,10 +309,18 @@ const CreateScreen = () => {
           ))}
         </Box>
       </div>
-      <Button variant="contained" color="primary" onClick={saveNewScreen}>
-        Guardar Nueva Pantalla
-      </Button>
-    </Paper>
+      {restructureMessage && (
+        <div className="restructure-message" style={{ position: 'absolute', bottom: '20px', left: '20px', padding: '10px', background: '#f8d7da', color: '#721c24', border: '1px solid #f5c6cb', borderRadius: '4px' }}>
+          <p>Reestructuración requerida para acomodar el nuevo elemento.</p>
+          <Button variant="contained" color="primary" onClick={restructureItems} style={{ marginRight: '10px' }}>
+            Reestructurar y Añadir Elemento
+          </Button>
+          <Button variant="outlined" color="secondary" onClick={handleManualIntervention}>
+            Proceder con la Intervención Manual
+          </Button>
+        </div>
+      )}
+    </div>
   );
 };
 

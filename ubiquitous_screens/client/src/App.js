@@ -5,6 +5,10 @@ import Signin from './pages/signin';
 import Signup from './pages/signup';
 import CreateScreen from './pages/screens/createScreen';
 import UpdateScreen from './pages/screens/updateScreen';
+import ScreenManager from './pages/screens/screenManager'; // Importa el ScreenManager
+import ItemManager from './pages/items/itemManager'; 
+import CreateItem from './pages/items/createItem';
+import UpdateItem from './pages/items/updateItem';
 import Header from './components/header';
 import ResetPassword from './pages/reset-password';
 import Items from './pages/items';
@@ -27,6 +31,10 @@ function App() {
           <Route path={routes.items} exact element={<Items />} />
           <Route path={routes.createScreen} element={<CreateScreen />} />
           <Route path={routes.updateScreen} element={<UpdateScreen />} />
+          <Route path={routes.createItem} element={<CreateItem />} />
+          <Route path={routes.updateItem} element={<UpdateItem />} />
+          <Route path={routes.manageScreens} element={<ScreenManager />} />
+          <Route path={routes.manageItems} element={<ItemManager />} />
         </Routes>
       </Router>
     </ThemeProvider>
