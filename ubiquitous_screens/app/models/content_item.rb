@@ -1,0 +1,2 @@
+class ContentItem < Item
+end

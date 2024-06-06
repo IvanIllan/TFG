@@ -1,0 +1,19 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  ancho: 1
+  alto: 1
+  identificador: MyString
+  categorias: 
+  array: 
+  default: 
+  factory: one
+
+two:
+  ancho: 1
+  alto: 1
+  identificador: MyString
+  categorias: 
+  array: 
+  default: 
+  factory: two

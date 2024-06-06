@@ -1,0 +1,17 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  name: MyString
+  ancho: 1
+  alto: 1
+  direccion_mac: MyString
+  estructura_html: 
+  factory: one
+
+two:
+  name: MyString
+  ancho: 1
+  alto: 1
+  direccion_mac: MyString
+  estructura_html: 
+  factory: two
