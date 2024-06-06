@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Draggable from 'react-draggable';
 import TextField from '@mui/material/TextField';
@@ -7,15 +8,18 @@ import Paper from '@mui/material/Paper';
 import Autocomplete from '@mui/material/Autocomplete';
 import Chip from '@mui/material/Chip';
 import './styles.css';
+import logo from '/home/ivan/Escritorio/tfg/TFG/ubiquitous_screens/client/src/logo.svg';
 
 const UpdateScreen = () => {
+  const location = useLocation();
+  const screenId = location.state?.screenId || null;
+
   const [items, setItems] = useState([]);
   const [selectedItems, setSelectedItems] = useState([]);
   const [screenSize, setScreenSize] = useState({ width: 375, height: 667 });
   const [availableItems, setAvailableItems] = useState([]);
   const [restructureMessage, setRestructureMessage] = useState(false);
   const [itemToAdd, setItemToAdd] = useState(null);
-  const [screens, setScreens] = useState([]);
   const [selectedScreen, setSelectedScreen] = useState(null);
 
   useEffect(() => {
@@ -23,11 +27,11 @@ const UpdateScreen = () => {
       try {
         const response = {
           data: [
-            { id: 1, width: 50, height: 50, text: 'Elemento 1' },
-            { id: 2, width: 100, height: 50, text: 'Elemento 2' },
-            { id: 3, width: 150, height: 100, text: 'Elemento 3' },
-            { id: 4, width: 200, height: 150, text: 'Elemento 4' },
-            { id: 5, width: 100, height: 100, text: 'Elemento 5' }
+            { id: 1, width: 50, height: 50, text: 'Elemento 1', content: '<p>Contenido de <b>Elemento 1</b></p>' },
+            { id: 2, width: 100, height: 50, text: 'Elemento 2', content: `<img src="${logo}" alt="Logo" />` },
+            { id: 3, width: 150, height: 100, text: 'Elemento 3', content: '<p>Texto de <i>Elemento 3</i></p>' },
+            { id: 4, width: 200, height: 150, text: 'Elemento 4', content: '<h1>Elemento 4</h1>' },
+            { id: 5, width: 100, height: 100, text: 'Elemento 5', content: '<div>Elemento 5</div>' }
           ]
         };
         setAvailableItems(response.data);
@@ -39,24 +43,39 @@ const UpdateScreen = () => {
     fetchItems();
   }, []);
 
-  useEffect(() => {
-    const fetchScreens = async () => {
-      try {
-        // Simulación de solicitud para obtener pantallas desde la base de datos
-        const response = {
-          data: [
-            { id: 1, name: 'Pantalla 1', width: 375, height: 667, items: [{ id: 1, left: 10, top: 10 }, { id: 2, left: 100, top: 100 }] },
-            { id: 2, name: 'Pantalla 2', width: 500, height: 800, items: [{ id: 3, left: 200, top: 200 }] }
-          ]
-        };
-        setScreens(response.data);
-      } catch (error) {
-        console.error('Error fetching screens:', error);
-      }
-    };
 
-    fetchScreens();
-  }, []);
+  useEffect(() => {
+    if (screenId) {
+      const fetchScreenById = async () => {
+        try {
+          const response = {
+            data: {
+              id: screenId,
+              name: `Pantalla ${screenId}`,
+              width: 375,
+              height: 667,
+              items: [
+                { id: 1, left: 10, top: 10 },
+                { id: 2, left: 100, top: 100 }
+              ]
+            }
+          };
+          setSelectedScreen(response.data);
+          setScreenSize({ width: response.data.width, height: response.data.height });
+          const screenItems = response.data.items.map(item => {
+            const screenItem = availableItems.find(ai => ai.id === item.id);
+            return screenItem ? { ...screenItem, left: item.left, top: item.top } : null;
+          }).filter(item => item !== null);
+          setItems(screenItems);
+          setSelectedItems(response.data.items.map(item => item.id));
+        } catch (error) {
+          console.error('Error fetching screen:', error);
+        }
+      };
+
+      fetchScreenById();
+    }
+  }, [screenId, availableItems]);
 
   const handleScreenSizeChange = (e) => {
     const { name, value } = e.target;
@@ -201,31 +220,6 @@ const UpdateScreen = () => {
     setItemToAdd(null);
   };
 
-  const handleScreenSelect = (event, value) => {
-    setSelectedScreen(value);
-    if (value) {
-      const screenItems = value.items.map(item => {
-        const screenItem = availableItems.find(ai => ai.id === item.id);
-        return { ...screenItem, left: item.left, top: item.top };
-      });
-      setItems(screenItems);
-      setSelectedItems(value.items.map(item => item.id));
-      setScreenSize({ width: value.width, height: value.height });
-    } else {
-      setItems([]);
-      setSelectedItems([]);
-    }
-  };
-
-  const handleDeleteScreen = () => {
-    if (!selectedScreen) return;
-    const updatedScreens = screens.filter(screen => screen.id !== selectedScreen.id);
-    setScreens(updatedScreens);
-    setSelectedScreen(null);
-    setItems([]);
-    setSelectedItems([]);
-  };
-
   const saveUpdatedScreen = () => {
     if (!selectedScreen) return;
 
@@ -236,20 +230,11 @@ const UpdateScreen = () => {
       items: items.map(({ id, left, top }) => ({ id, left, top }))
     };
 
-    setScreens(prevScreens => prevScreens.map(screen => screen.id === updatedScreen.id ? updatedScreen : screen));
     alert('Pantalla actualizada.');
   };
 
   return (
     <Paper elevation={3} className="screen-container" style={{ padding: '20px', background: '#fff', minHeight: '100vh' }}>
-      <Autocomplete
-        options={screens}
-        getOptionLabel={(option) => option.name}
-        value={selectedScreen}
-        onChange={handleScreenSelect}
-        style={{ minWidth: '250px', marginBottom: '20px' }}
-        renderInput={(params) => <TextField {...params} variant="outlined" label="Seleccionar Pantalla" />}
-      />
       {selectedScreen && (
         <>
           <div className="screen-header">
@@ -335,7 +320,17 @@ const UpdateScreen = () => {
                       height: `${item.height}px`,
                     }}
                   >
-                    {item.text}
+                    <div
+                      className="item-content"
+                      dangerouslySetInnerHTML={{ __html: item.content }}
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                      }}
+                    />
                   </Box>
                 </Draggable>
               ))}
@@ -343,9 +338,6 @@ const UpdateScreen = () => {
           </div>
           <Button variant="contained" color="primary" onClick={saveUpdatedScreen} style={{ marginRight: '10px' }}>
             Guardar Pantalla
-          </Button>
-          <Button variant="contained" color="error" onClick={handleDeleteScreen}>
-            Eliminar Pantalla
           </Button>
         </>
       )}
