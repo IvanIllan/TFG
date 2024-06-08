@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import httpClient from '../../utils/httpClient'; 
 import Paper from '@mui/material/Paper';
 import TextField from '@mui/material/TextField';
 import Table from '@mui/material/Table';
@@ -24,18 +25,22 @@ const ItemManager = () => {
     name: '',
     width: '',
     height: '',
-    categories: ''
+    tags: ''
   });
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
   useEffect(() => {
-    const loadedItems = [
-      { id: 1, name: 'Item 1', width: 50, height: 50, categories: ['Categoria 1', 'Categoria 2'] },
-      { id: 2, name: 'Item 2', width: 100, height: 50, categories: ['Categoria 3'] },
-      { id: 3, name: 'Item 3', width: 150, height: 100, categories: ['Categoria 1', 'Categoria 4'] },
-    ];
-    setItems(loadedItems);
+    const fetchItems = async () => {
+      try {
+        const response = await httpClient.get('/items');
+        setItems(response.data);
+      } catch (error) {
+        console.error('Error fetching items:', error);
+      }
+    };
+
+    fetchItems();
   }, []);
 
   const handleFilterChange = (e) => {
@@ -52,7 +57,7 @@ const ItemManager = () => {
       item.name.toLowerCase().includes(filters.name.toLowerCase()) &&
       item.width.toString().includes(filters.width) &&
       item.height.toString().includes(filters.height) &&
-      item.categories.some(cat => cat.toLowerCase().includes(filters.categories.toLowerCase()))
+      item.tags.some(tag => tag.toLowerCase().includes(filters.tags.toLowerCase()))
     );
   });
 
@@ -60,9 +65,15 @@ const ItemManager = () => {
     navigate(`/update-item`, { state: { itemId } });
   };
 
-  const handleDelete = (itemId) => {
-    setItems(prevItems => prevItems.filter(item => item.id !== itemId));
-    alert('Item eliminado.');
+  const handleDelete = async (itemId) => {
+    try {
+      await httpClient.delete(`/items/${itemId}`);
+      setItems(prevItems => prevItems.filter(item => item.id !== itemId));
+      alert('Item eliminado.');
+    } catch (error) {
+      console.error('Error deleting item:', error);
+      alert('Error eliminando item.');
+    }
   };
 
   const handleChangePage = (event, newPage) => {
@@ -115,10 +126,10 @@ const ItemManager = () => {
             style={{ marginBottom: '20px' }}
           />
           <TextField
-            label="Categorias"
+            label="Etiquetas"
             type="text"
-            name="categories"
-            value={filters.categories}
+            name="tags"
+            value={filters.tags}
             onChange={handleFilterChange}
             fullWidth
           />
@@ -139,7 +150,7 @@ const ItemManager = () => {
                   <TableCell>Nombre</TableCell>
                   <TableCell>Ancho</TableCell>
                   <TableCell>Alto</TableCell>
-                  <TableCell>Categorias</TableCell>
+                  <TableCell>Etiquetas</TableCell>
                   <TableCell>Acciones</TableCell>
                 </TableRow>
               </TableHead>
@@ -151,8 +162,8 @@ const ItemManager = () => {
                     <TableCell>{item.width}</TableCell>
                     <TableCell>{item.height}</TableCell>
                     <TableCell>
-                      {item.categories.map((category, index) => (
-                        <Chip key={index} label={category} style={{ marginRight: '5px' }} />
+                      {item.tags.map((tag, index) => (
+                        <Chip key={index} label={tag} style={{ marginRight: '5px' }} />
                       ))}
                     </TableCell>
                     <TableCell>
