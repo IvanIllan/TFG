@@ -1,4 +1,5 @@
 Rails.application.routes.draw do
+  mount ActionCable.server => '/cable'
   devise_for :users, skip: %i[registrations sessions passwords]
   devise_scope :user do
     post 'signup', to: 'registrations#create'
