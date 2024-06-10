@@ -1,6 +1,9 @@
 class ItemsController < ApplicationController
+  before_action :authenticate_user!
+
   def index
-    @items = Item.all
+    factories = current_user.factories.pluck(:id)
+    @items = Item.where(factory_id: factories)
     render json: @items
   end
 
@@ -12,6 +15,7 @@ class ItemsController < ApplicationController
   def create
     @item = Item.new(item_params)
     if @item.save
+      attach_image if params[:item][:image].present?
       render json: @item, status: :created
     else
       render json: @item.errors, status: :unprocessable_entity
@@ -21,6 +25,7 @@ class ItemsController < ApplicationController
   def update
     @item = Item.find(params[:id])
     if @item.update(item_params)
+      attach_image if params[:item][:image].present?
       render json: @item, status: :ok
     else
       render json: @item.errors, status: :unprocessable_entity
@@ -36,6 +41,10 @@ class ItemsController < ApplicationController
   private
 
   def item_params
-    params.require(:item).permit(:name, :width, :height, :content, :type, :factory_id, tags: [], images: [])
+    params.require(:item).permit(:name, :width, :height, :image, :content, :content_type, :factory_id, tags: [])
+  end
+
+  def attach_image
+    @item.image.attach(params[:item][:image])
   end
 end

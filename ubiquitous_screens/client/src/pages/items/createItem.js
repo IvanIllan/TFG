@@ -9,7 +9,7 @@ import CardContent from '@mui/material/CardContent';
 import Autocomplete, { createFilterOptions } from '@mui/material/Autocomplete';
 import Chip from '@mui/material/Chip';
 import { FormContainer } from 'react-hook-form-mui';
-import axios from 'axios';
+import httpClient from '../../utils/httpClient';
 import enLocale from './locales/en.js';
 import './styles.css';
 
@@ -23,7 +23,7 @@ const CreateItem = () => {
   const [height, setHeight] = useState('');
   const [tags, setTags] = useState([]);
   const [selectedTags, setSelectedTags] = useState([]);
-  const [itemType, setItemType] = useState('content'); // 'content' or 'image'
+  const [contentType, setContentType] = useState('content'); // 'content' or 'image'
   const [content, setContent] = useState('');
   const [image, setImage] = useState(null);
   const [imageName, setImageName] = useState('');
@@ -32,14 +32,8 @@ const CreateItem = () => {
 
   useEffect(() => {
     const fetchFactories = async () => {
-      const token = localStorage.getItem('authToken');
-      
       try {
-        const response = await axios.get('http://127.0.0.1:3001/factories', {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
+        const response = await httpClient.get('/factories');
         setFactories(response.data);
       } catch (error) {
         console.error('Error fetching factories:', error);
@@ -76,11 +70,11 @@ const CreateItem = () => {
     setImageName(file.name);
   };
 
-  const handleItemTypeChange = (event) => {
-    setItemType(event.target.value);
-    setContent(''); // Clear content when switching item type
-    setImage(null); // Clear image when switching item type
-    setImageName(''); // Clear image name when switching item type
+  const handleContentTypeChange = (event) => {
+    setContentType(event.target.value);
+    setContent(''); // Clear content when switching content type
+    setImage(null); // Clear image when switching content type
+    setImageName(''); // Clear image name when switching content type
   };
 
   const handleFactoryChange = (event, value) => {
@@ -90,23 +84,24 @@ const CreateItem = () => {
   const formLocales = enLocale.form;
 
   const submit = async (data) => {
-    const { name, width, height } = data;
     const httpParams = new FormData();
-    httpParams.append('name', name);
-    httpParams.append('width', width);
-    httpParams.append('height', height);
-    httpParams.append('tags', selectedTags);
-    httpParams.append('type', itemType);
-    httpParams.append('factory_id', selectedFactory?.id); // Añadir factory_id
+    httpParams.append('item[name]', name);
+    httpParams.append('item[width]', width);
+    httpParams.append('item[height]', height);
+    selectedTags.forEach((tag) => {
+      httpParams.append('item[tags][]', tag); // Enviar tags como array
+    });
+    httpParams.append('item[content_type]', contentType); // Usar 'content_type'
+    httpParams.append('item[factory_id]', selectedFactory?.id); // Añadir factory_id
 
-    if (itemType === 'content') {
-      httpParams.append('content', content);
-    } else if (itemType === 'image' && image) {
-      httpParams.append('image', image);
+    if (contentType === 'content') {
+      httpParams.append('item[content]', content);
+    } else if (contentType === 'image' && image) {
+      httpParams.append('item[image]', image);
     }
 
     try {
-      const response = await axios.post('http://127.0.0.1:3001/items', httpParams, {
+      const response = await httpClient.post('/items', httpParams, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
@@ -132,12 +127,12 @@ const CreateItem = () => {
             </Alert>
           )}
           <TextField
-            label="Tipo de Item"
+            label="Tipo de Contenido"
             variant="outlined"
             select
             SelectProps={{ native: true }}
-            value={itemType}
-            onChange={handleItemTypeChange}
+            value={contentType}
+            onChange={handleContentTypeChange}
             fullWidth
             margin="normal"
           >
@@ -183,7 +178,7 @@ const CreateItem = () => {
             fullWidth
             margin="normal"
           />
-          {itemType === 'content' ? (
+          {contentType === 'content' ? (
             <TextField
               label="Contenido HTML"
               variant="outlined"
@@ -256,7 +251,7 @@ const CreateItem = () => {
         <Box className="item-preview" sx={{ width: '70%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <Card sx={{ width: `${width}px`, height: `${height}px`, border: '1px solid black' }}>
             <CardContent sx={{ padding: 0 }}>
-              {itemType === 'content' ? (
+              {contentType === 'content' ? (
                 <div className="content" style={{ display: 'flex', justifyContent: 'center', height: '100%' }} dangerouslySetInnerHTML={{ __html: content }}></div>
               ) : (
                 image && (
