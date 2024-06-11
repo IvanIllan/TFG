@@ -8,4 +8,5 @@ Rails.application.routes.draw do
   end
   resources :items, only: [:index, :show, :create, :update, :destroy]
   resources :factories, only: [:index]
+  resources :screens, only: [:index, :show, :create, :update, :destroy]
 end

@@ -37,7 +37,7 @@ export const Signin = () => {
       const token = response.headers['authorization'].split(' ')[1]; // Suponiendo que el token viene en el header 'Authorization'
       localStorage.setItem('token', token); // Guarda el token en el localStorage
       setError(''); // Resetea el mensaje de error
-      navigate(routes.screens); // Redirige a la pantalla principal
+      navigate(routes.manageScreens); // Redirige a la pantalla principal
     } catch (error) {
       console.error('Error al iniciar sesión:', error);
       setError('Invalid Email or Password'); // Establece el mensaje de error

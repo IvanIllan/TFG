@@ -7,75 +7,44 @@ import Button from '@mui/material/Button';
 import Paper from '@mui/material/Paper';
 import Autocomplete from '@mui/material/Autocomplete';
 import Chip from '@mui/material/Chip';
+import httpClient from '../../utils/httpClient';
 import './styles.css';
-import logo from '/home/ivan/Escritorio/tfg/TFG/ubiquitous_screens/client/src/logo.svg';
 
 const UpdateScreen = () => {
   const location = useLocation();
   const screenId = location.state?.screenId || null;
 
-  const [items, setItems] = useState([]);
-  const [selectedItems, setSelectedItems] = useState([]);
-  const [screenSize, setScreenSize] = useState({ width: 375, height: 667 });
   const [availableItems, setAvailableItems] = useState([]);
+  const [selectedItems, setSelectedItems] = useState([]);
+  const [selectedScreen, setSelectedScreen] = useState(null);
+  const [screenSize, setScreenSize] = useState({ width: 375, height: 667 });
   const [restructureMessage, setRestructureMessage] = useState(false);
   const [itemToAdd, setItemToAdd] = useState(null);
-  const [selectedScreen, setSelectedScreen] = useState(null);
 
   useEffect(() => {
-    const fetchItems = async () => {
+    const fetchItemsAndScreen = async () => {
       try {
-        const response = {
-          data: [
-            { id: 1, width: 50, height: 50, text: 'Elemento 1', content: '<p>Contenido de <b>Elemento 1</b></p>' },
-            { id: 2, width: 100, height: 50, text: 'Elemento 2', content: `<img src="${logo}" alt="Logo" />` },
-            { id: 3, width: 150, height: 100, text: 'Elemento 3', content: '<p>Texto de <i>Elemento 3</i></p>' },
-            { id: 4, width: 200, height: 150, text: 'Elemento 4', content: '<h1>Elemento 4</h1>' },
-            { id: 5, width: 100, height: 100, text: 'Elemento 5', content: '<div>Elemento 5</div>' }
-          ]
-        };
-        setAvailableItems(response.data);
+        const itemsResponse = await httpClient.get('/items');
+        setAvailableItems(itemsResponse.data);
+
+        if (screenId) {
+          const screenResponse = await httpClient.get(`/screens/${screenId}`);
+          const screenData = screenResponse.data;
+          setSelectedScreen(screenData);
+          setScreenSize({ width: screenData.width, height: screenData.height });
+          const screenItems = screenData.items.map(item => {
+            const screenItem = itemsResponse.data.find(ai => ai.id === item.id);
+            return screenItem ? { ...screenItem, left: item.left, top: item.top } : null;
+          }).filter(item => item !== null);
+          setSelectedItems(screenItems);
+        }
       } catch (error) {
-        console.error('Error fetching items:', error);
+        console.error('Error fetching data:', error);
       }
     };
 
-    fetchItems();
-  }, []);
-
-
-  useEffect(() => {
-    if (screenId) {
-      const fetchScreenById = async () => {
-        try {
-          const response = {
-            data: {
-              id: screenId,
-              name: `Pantalla ${screenId}`,
-              width: 375,
-              height: 667,
-              items: [
-                { id: 1, left: 10, top: 10 },
-                { id: 2, left: 100, top: 100 }
-              ]
-            }
-          };
-          setSelectedScreen(response.data);
-          setScreenSize({ width: response.data.width, height: response.data.height });
-          const screenItems = response.data.items.map(item => {
-            const screenItem = availableItems.find(ai => ai.id === item.id);
-            return screenItem ? { ...screenItem, left: item.left, top: item.top } : null;
-          }).filter(item => item !== null);
-          setItems(screenItems);
-          setSelectedItems(response.data.items.map(item => item.id));
-        } catch (error) {
-          console.error('Error fetching screen:', error);
-        }
-      };
-
-      fetchScreenById();
-    }
-  }, [screenId, availableItems]);
+    fetchItemsAndScreen();
+  }, [screenId]);
 
   const handleScreenSizeChange = (e) => {
     const { name, value } = e.target;
@@ -87,7 +56,7 @@ const UpdateScreen = () => {
 
   const handleAddItem = (event, value) => {
     const selectedItemIds = value.map(item => item.id);
-    const newItems = selectedItemIds.filter(id => !selectedItems.includes(id))
+    const newItems = selectedItemIds.filter(id => !selectedItems.some(item => item.id === id))
       .map(selectedItemId => {
         const selectedItem = availableItems.find(item => item.id === selectedItemId);
         if (!selectedItem) return null;
@@ -107,31 +76,32 @@ const UpdateScreen = () => {
         } else if (result.result === 'restructure-required') {
           setRestructureMessage(true);
           setItemToAdd(newItem);
-          setSelectedItems(prevSelectedItems => prevSelectedItems.filter(id => id !== selectedItemId));
           return null;
         } else if (result.result === 'no-space') {
           alert('No hay espacio disponible para el nuevo elemento.');
-          setSelectedItems(prevSelectedItems => prevSelectedItems.filter(id => id !== selectedItemId));
           return null;
         }
         return null;
       }).filter(item => item !== null);
 
-    const removedItems = selectedItems.filter(id => !selectedItemIds.includes(id));
-    setItems(prevItems => prevItems.filter(item => !removedItems.includes(item.id)).concat(newItems));
-    setSelectedItems(selectedItemIds);
+    setSelectedItems(prevItems => prevItems.concat(newItems));
   };
 
   const handleRemoveItem = (itemId) => {
-    setItems(prevItems => prevItems.filter(item => item.id !== itemId));
-    setSelectedItems(prevSelectedItems => prevSelectedItems.filter(id => id !== itemId));
+    setSelectedItems(prevItems => prevItems.filter(item => item.id !== itemId));
   };
 
   const handleDrag = (id, newPosition) => {
-    setItems(prevItems => prevItems.map(item =>
-      item.id === id ? { ...item, left: newPosition.x, top: newPosition.y } : item
-    ));
+    const newItem = { ...selectedItems.find(item => item.id === id), left: newPosition.x, top: newPosition.y };
+    const isCollision = checkCollision(newItem, selectedItems.filter(item => item.id !== id));
+  
+    if (!isCollision) {
+      setSelectedItems(prevItems => prevItems.map(item =>
+        item.id === id ? { ...item, left: newPosition.x, top: newPosition.y } : item
+      ));
+    }
   };
+
 
   const checkCollision = (item, otherItems) => {
     const buffer = 1; // Espacio entre elementos
@@ -149,8 +119,9 @@ const UpdateScreen = () => {
     return false;
   };
 
+
   const checkSpaceAvailability = (newItem) => {
-    const visibleItems = items.filter(item => selectedItems.includes(item.id));
+    const visibleItems = selectedItems;
 
     const canPlaceImmediately = (item) => {
       for (let x = 0; x <= screenSize.width - item.width; x += 10) {
@@ -196,7 +167,7 @@ const UpdateScreen = () => {
   const restructureItems = () => {
     if (!itemToAdd) return;
 
-    const allItems = [...items, itemToAdd];
+    const allItems = [...selectedItems, itemToAdd];
     allItems.sort((a, b) => a.width * a.height - b.width * b.height);
     for (let i = 0; i < allItems.length; i++) {
       for (let x = 0; x <= screenSize.width - allItems[i].width; x += 10) {
@@ -209,8 +180,7 @@ const UpdateScreen = () => {
         }
       }
     }
-    setItems(allItems);
-    setSelectedItems(prevSelectedItems => [...prevSelectedItems, itemToAdd.id]);
+    setSelectedItems(allItems);
     setRestructureMessage(false);
     setItemToAdd(null);
   };
@@ -220,17 +190,23 @@ const UpdateScreen = () => {
     setItemToAdd(null);
   };
 
-  const saveUpdatedScreen = () => {
+  const saveUpdatedScreen = async () => {
     if (!selectedScreen) return;
 
     const updatedScreen = {
       ...selectedScreen,
       width: screenSize.width,
       height: screenSize.height,
-      items: items.map(({ id, left, top }) => ({ id, left, top }))
+      items: selectedItems.map(({ id, left, top }) => ({ id, left, top }))
     };
 
-    alert('Pantalla actualizada.');
+    try {
+      await httpClient.put(`/screens/${selectedScreen.id}`, updatedScreen);
+      alert('Pantalla actualizada.');
+    } catch (error) {
+      console.error('Error updating screen:', error);
+      alert('Error actualizando pantalla.');
+    }
   };
 
   return (
@@ -260,8 +236,8 @@ const UpdateScreen = () => {
           <Autocomplete
             multiple
             options={availableItems}
-            getOptionLabel={(option) => option.text}
-            value={availableItems.filter(item => selectedItems.includes(item.id))}
+            getOptionLabel={(option) => option.name}
+            value={selectedItems}
             onChange={handleAddItem}
             style={{ minWidth: '250px', marginBottom: '20px' }}
             renderInput={(params) => <TextField {...params} variant="outlined" label="Seleccionar Elemento" />}
@@ -269,13 +245,45 @@ const UpdateScreen = () => {
               value.map((option, index) => (
                 <Chip
                   key={option.id}
-                  label={option.text}
+                  label={option.name}
                   {...getTagProps({ index })}
                   onDelete={() => handleRemoveItem(option.id)}
                 />
               ))
             }
           />
+          <div className="device-frame" style={{ marginBottom: '20px' }}>
+            <Box
+              className="screen"
+              style={{
+                width: `${screenSize.width}px`,
+                height: `${screenSize.height}px`,
+              }}
+            >
+              {selectedItems.map((item) => (
+                <Draggable
+                  key={item.id}
+                  bounds="parent"
+                  position={{ x: item.left, y: item.top }}
+                  onStop={(event, { x, y }) => handleDrag(item.id, { x, y })}
+                >
+                  <Box
+                    className="draggable-item"
+                    style={{
+                      width: `${item.width}px`,
+                      height: `${item.height}px`,
+                    }}
+                  >
+                    {item.content_type === 'image' ? (
+                      <img src={item.image_url} alt="item" style={{ width: '100%', height: '100%' }} />
+                    ) : (
+                      <div dangerouslySetInnerHTML={{ __html: item.content }} />
+                    )}
+                  </Box>
+                </Draggable>
+              ))}
+            </Box>
+          </div>
           {restructureMessage && (
             <div style={{ marginBottom: '20px', padding: '10px', background: '#f8d7da', color: '#721c24', border: '1px solid #f5c6cb', borderRadius: '4px' }}>
               <p>Reestructuración requerida para acomodar el nuevo elemento.</p>
@@ -287,55 +295,6 @@ const UpdateScreen = () => {
               </Button>
             </div>
           )}
-          <div className="device-frame" style={{ marginBottom: '20px' }}>
-            <Box
-              className="screen"
-              style={{
-                width: `${screenSize.width}px`,
-                height: `${screenSize.height}px`,
-              }}
-            >
-              {items.filter((item) => selectedItems.includes(item.id)).map((item) => (
-                <Draggable
-                  key={item.id}
-                  bounds="parent"
-                  position={{ x: item.left, y: item.top }}
-                  onDrag={(event, { x, y }) => {
-                    const newPosition = { x, y };
-                    const visibleItems = items.filter(otherItem => selectedItems.includes(otherItem.id));
-                    const isCollision = checkCollision(
-                      { ...item, left: x, top: y },
-                      visibleItems.filter(otherItem => otherItem.id !== item.id)
-                    );
-
-                    if (!isCollision) {
-                      handleDrag(item.id, newPosition);
-                    }
-                  }}
-                >
-                  <Box
-                    className="draggable-item"
-                    style={{
-                      width: `${item.width}px`,
-                      height: `${item.height}px`,
-                    }}
-                  >
-                    <div
-                      className="item-content"
-                      dangerouslySetInnerHTML={{ __html: item.content }}
-                      style={{
-                        width: '100%',
-                        height: '100%',
-                        display: 'flex',
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                      }}
-                    />
-                  </Box>
-                </Draggable>
-              ))}
-            </Box>
-          </div>
           <Button variant="contained" color="primary" onClick={saveUpdatedScreen} style={{ marginRight: '10px' }}>
             Guardar Pantalla
           </Button>

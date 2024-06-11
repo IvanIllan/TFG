@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import httpClient from '../../utils/httpClient'; 
+import httpClient from '../../utils/httpClient';
 import Paper from '@mui/material/Paper';
 import TextField from '@mui/material/TextField';
 import Table from '@mui/material/Table';
@@ -15,7 +15,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import Button from '@mui/material/Button';
 import TablePagination from '@mui/material/TablePagination';
 import Chip from '@mui/material/Chip';
-import './styles.css';
+import './itemManager.css';
 
 const ItemManager = () => {
   const navigate = useNavigate();
@@ -87,7 +87,8 @@ const ItemManager = () => {
 
   return (
     <div className="item-manager-container">
-      <div className="filters-container">
+      <Paper elevation={3} className="filters-container">
+        <h2>Filtros</h2>
         <div className="filters">
           <TextField
             label="ID"
@@ -96,7 +97,7 @@ const ItemManager = () => {
             value={filters.id}
             onChange={handleFilterChange}
             fullWidth
-            style={{ marginBottom: '20px' }}
+            margin="normal"
           />
           <TextField
             label="Nombre"
@@ -105,7 +106,7 @@ const ItemManager = () => {
             value={filters.name}
             onChange={handleFilterChange}
             fullWidth
-            style={{ marginBottom: '20px' }}
+            margin="normal"
           />
           <TextField
             label="Ancho"
@@ -114,7 +115,7 @@ const ItemManager = () => {
             value={filters.width}
             onChange={handleFilterChange}
             fullWidth
-            style={{ marginBottom: '20px' }}
+            margin="normal"
           />
           <TextField
             label="Alto"
@@ -123,7 +124,7 @@ const ItemManager = () => {
             value={filters.height}
             onChange={handleFilterChange}
             fullWidth
-            style={{ marginBottom: '20px' }}
+            margin="normal"
           />
           <TextField
             label="Etiquetas"
@@ -132,12 +133,19 @@ const ItemManager = () => {
             value={filters.tags}
             onChange={handleFilterChange}
             fullWidth
+            margin="normal"
           />
         </div>
-      </div>
+      </Paper>
       <div className="table-container">
-        <div className="button-container">
-          <Button variant="contained" color="primary" className="add-button" onClick={() => navigate('/create-item')}>
+        <div className="header">
+          <h1>Gestión de Items</h1>
+          <Button
+            variant="contained"
+            color="primary"
+            className="add-button"
+            onClick={() => navigate('/create-item')}
+          >
             Añadir Nuevo Item
           </Button>
         </div>
@@ -163,7 +171,7 @@ const ItemManager = () => {
                     <TableCell>{item.height}</TableCell>
                     <TableCell>
                       {item.tags.map((tag, index) => (
-                        <Chip key={index} label={tag} style={{ marginRight: '5px' }} />
+                        <Chip key={index} label={tag} className="chip" />
                       ))}
                     </TableCell>
                     <TableCell>
