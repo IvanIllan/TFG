@@ -1,0 +1,63 @@
+/* signin.css */
+.container {
+  display: flex;
+  height: calc(100vh - 64px);
+  padding-top: 64px;
+}
+
+.sidebar {
+  width: 30%;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  background-color: #f9f9f9;
+  border-right: 1px solid #ddd;
+}
+
+.item-preview {
+  width: 70%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #fff;
+  padding: 20px;
+}
+
+button + p {
+  margin-left: 10px;
+  line-height: 1.5;
+}
+
+input[type="file"] + .MuiOutlinedInput-root {
+  width: 100%;
+}
+
+.panel-with-image {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  padding: 20px;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+}
+
+.panel-with-image img {
+  max-width: 100%;
+  height: auto;
+  margin-bottom: 20px;
+}
+
+.panel-with-image .MuiTypography-h5 {
+  margin-bottom: 10px;
+}
+
+.panel-with-image .MuiTypography-subtitle1 {
+  margin-bottom: 20px;
+}
+
+.panel-with-image form {
+  width: 100%;
+  max-width: 400px;
+}

@@ -51,7 +51,7 @@ const ScreenManager = () => {
   };
 
   const handleEdit = (screenId) => {
-    navigate(`/update-screen`, { state: { screenId } });
+    navigate(`/dashboard/update-screen/${screenId}`);
   };
 
   const handleDelete = async (screenId) => {
@@ -77,6 +77,7 @@ const ScreenManager = () => {
   return (
     <div className="screen-manager-container">
       <div className="filters-container">
+        <h2>Filtros</h2>
         <div className="filters">
           <TextField
             label="ID"
@@ -125,8 +126,9 @@ const ScreenManager = () => {
         </div>
       </div>
       <div className="table-container">
-        <div className="button-container">
-          <Button variant="contained" color="primary" className="add-button" onClick={() => navigate('/create-screen')}>
+        <div className="header">
+          <h1>Pantallas Ubicuas</h1>
+          <Button variant="contained" color="primary" className="add-button" onClick={() => navigate('/dashboard/create-screen')}>
             Añadir Nueva Pantalla
           </Button>
         </div>

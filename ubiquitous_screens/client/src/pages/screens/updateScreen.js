@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Draggable from 'react-draggable';
 import TextField from '@mui/material/TextField';
@@ -7,12 +7,16 @@ import Button from '@mui/material/Button';
 import Paper from '@mui/material/Paper';
 import Autocomplete from '@mui/material/Autocomplete';
 import Chip from '@mui/material/Chip';
+import SaveIcon from '@mui/icons-material/Save';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import httpClient from '../../utils/httpClient';
+import SuccessModal from '../../components/modals/successModal';
 import './styles.css';
 
 const UpdateScreen = () => {
-  const location = useLocation();
-  const screenId = location.state?.screenId || null;
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const screenId = id;
 
   const [availableItems, setAvailableItems] = useState([]);
   const [selectedItems, setSelectedItems] = useState([]);
@@ -20,24 +24,39 @@ const UpdateScreen = () => {
   const [screenSize, setScreenSize] = useState({ width: 375, height: 667 });
   const [restructureMessage, setRestructureMessage] = useState(false);
   const [itemToAdd, setItemToAdd] = useState(null);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalMessage, setModalMessage] = useState('');
+  const [screenName, setScreenName] = useState('');
+  const [macAddress, setMacAddress] = useState('');
+  const [factories, setFactories] = useState([]);
+  const [selectedFactory, setSelectedFactory] = useState(null);
 
   useEffect(() => {
     const fetchItemsAndScreen = async () => {
+      if (!screenId) {
+        console.error('Screen ID is null');
+        return;
+      }
+
       try {
         const itemsResponse = await httpClient.get('/items');
         setAvailableItems(itemsResponse.data);
 
-        if (screenId) {
-          const screenResponse = await httpClient.get(`/screens/${screenId}`);
-          const screenData = screenResponse.data;
-          setSelectedScreen(screenData);
-          setScreenSize({ width: screenData.width, height: screenData.height });
-          const screenItems = screenData.items.map(item => {
-            const screenItem = itemsResponse.data.find(ai => ai.id === item.id);
-            return screenItem ? { ...screenItem, left: item.left, top: item.top } : null;
-          }).filter(item => item !== null);
-          setSelectedItems(screenItems);
-        }
+        const factoriesResponse = await httpClient.get('/factories');
+        setFactories(factoriesResponse.data);
+
+        const screenResponse = await httpClient.get(`/screens/${screenId}`);
+        const screenData = screenResponse.data;
+        setSelectedScreen(screenData);
+        setScreenName(screenData.name);
+        setMacAddress(screenData.mac);
+        setSelectedFactory(factoriesResponse.data.find(factory => factory.id === screenData.factory_id));
+        setScreenSize({ width: screenData.width, height: screenData.height });
+        const screenItems = screenData.items.map(item => {
+          const screenItem = itemsResponse.data.find(ai => ai.id === item.id);
+          return screenItem ? { ...screenItem, left: item.left, top: item.top } : null;
+        }).filter(item => item !== null);
+        setSelectedItems(screenItems);
       } catch (error) {
         console.error('Error fetching data:', error);
       }
@@ -94,7 +113,7 @@ const UpdateScreen = () => {
   const handleDrag = (id, newPosition) => {
     const newItem = { ...selectedItems.find(item => item.id === id), left: newPosition.x, top: newPosition.y };
     const isCollision = checkCollision(newItem, selectedItems.filter(item => item.id !== id));
-  
+
     if (!isCollision) {
       setSelectedItems(prevItems => prevItems.map(item =>
         item.id === id ? { ...item, left: newPosition.x, top: newPosition.y } : item
@@ -102,23 +121,21 @@ const UpdateScreen = () => {
     }
   };
 
-
   const checkCollision = (item, otherItems) => {
-    const buffer = 1; // Espacio entre elementos
+    const buffer = 1;
     for (const otherItem of otherItems) {
       if (
         item.id !== otherItem.id &&
         item.left < otherItem.left + otherItem.width + buffer &&
         item.left + item.width + buffer > otherItem.left &&
         item.top < otherItem.top + otherItem.height + buffer &&
-        item.top + item.height + buffer > otherItem.top
+        item.top + otherItem.height + buffer > otherItem.top
       ) {
         return true;
       }
     }
     return false;
   };
-
 
   const checkSpaceAvailability = (newItem) => {
     const visibleItems = selectedItems;
@@ -195,51 +212,83 @@ const UpdateScreen = () => {
 
     const updatedScreen = {
       ...selectedScreen,
+      name: screenName,
       width: screenSize.width,
       height: screenSize.height,
-      items: selectedItems.map(({ id, left, top }) => ({ id, left, top }))
+      mac: macAddress,
+      factory_id: selectedFactory?.id,
+      html_structure: selectedItems.map(({ id, left, top }) => ({ id, left, top }))
     };
 
     try {
       await httpClient.put(`/screens/${selectedScreen.id}`, updatedScreen);
-      alert('Pantalla actualizada.');
+      setModalMessage('Pantalla actualizada correctamente.');
+      setModalOpen(true);
     } catch (error) {
       console.error('Error updating screen:', error);
-      alert('Error actualizando pantalla.');
+      setModalMessage('Error actualizando pantalla.');
+      setModalOpen(true);
     }
   };
 
+  const handleCloseModal = () => {
+    setModalOpen(false);
+  };
+
   return (
-    <Paper elevation={3} className="screen-container" style={{ padding: '20px', background: '#fff', minHeight: '100vh' }}>
-      {selectedScreen && (
-        <>
-          <div className="screen-header">
-            <div className="screen-inputs" style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
-              <TextField
-                label="Ancho de pantalla"
-                type="number"
-                name="width"
-                value={screenSize.width}
-                onChange={handleScreenSizeChange}
-                inputProps={{ min: 0 }}
-              />
-              <TextField
-                label="Alto de pantalla"
-                type="number"
-                name="height"
-                value={screenSize.height}
-                onChange={handleScreenSizeChange}
-                inputProps={{ min: 0 }}
-              />
-            </div>
+    <div className="container">
+      <Paper elevation={3} className="sidebar" style={{ padding: '20px', background: '#fff', height: 'calc(100vh - 64px)', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+        <div style={{ flexGrow: 1 }}>
+          <div className="screen-inputs" style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '20px' }}>
+            <TextField
+              label="Nombre de pantalla"
+              type="text"
+              name="name"
+              value={screenName}
+              onChange={(e) => setScreenName(e.target.value)}
+              fullWidth
+            />
+            <TextField
+              label="MAC Address"
+              type="text"
+              name="mac"
+              value={macAddress}
+              onChange={(e) => setMacAddress(e.target.value)}
+              fullWidth
+            />
+            <TextField
+              label="Ancho de pantalla (px)"
+              type="number"
+              name="width"
+              value={screenSize.width}
+              onChange={handleScreenSizeChange}
+              inputProps={{ min: 0 }}
+              fullWidth
+            />
+            <TextField
+              label="Alto de pantalla (px)"
+              type="number"
+              name="height"
+              value={screenSize.height}
+              onChange={handleScreenSizeChange}
+              inputProps={{ min: 0 }}
+              fullWidth
+            />
+            <Autocomplete
+              options={factories}
+              getOptionLabel={(option) => option.name}
+              value={selectedFactory}
+              onChange={(event, value) => setSelectedFactory(value)}
+              renderInput={(params) => <TextField {...params} variant="outlined" label="Seleccionar Factory" />}
+              fullWidth
+            />
           </div>
           <Autocomplete
             multiple
             options={availableItems}
             getOptionLabel={(option) => option.name}
-            value={selectedItems}
+            value={availableItems.filter(item => selectedItems.some(selected => selected.id === item.id))}
             onChange={handleAddItem}
-            style={{ minWidth: '250px', marginBottom: '20px' }}
             renderInput={(params) => <TextField {...params} variant="outlined" label="Seleccionar Elemento" />}
             renderTags={(value, getTagProps) =>
               value.map((option, index) => (
@@ -251,56 +300,80 @@ const UpdateScreen = () => {
                 />
               ))
             }
+            fullWidth
+            style={{ marginBottom: '20px' }}
           />
-          <div className="device-frame" style={{ marginBottom: '20px' }}>
-            <Box
-              className="screen"
-              style={{
-                width: `${screenSize.width}px`,
-                height: `${screenSize.height}px`,
-              }}
-            >
-              {selectedItems.map((item) => (
-                <Draggable
-                  key={item.id}
-                  bounds="parent"
-                  position={{ x: item.left, y: item.top }}
-                  onStop={(event, { x, y }) => handleDrag(item.id, { x, y })}
-                >
-                  <Box
-                    className="draggable-item"
-                    style={{
-                      width: `${item.width}px`,
-                      height: `${item.height}px`,
-                    }}
-                  >
-                    {item.content_type === 'image' ? (
-                      <img src={item.image_url} alt="item" style={{ width: '100%', height: '100%' }} />
-                    ) : (
-                      <div dangerouslySetInnerHTML={{ __html: item.content }} />
-                    )}
-                  </Box>
-                </Draggable>
-              ))}
-            </Box>
-          </div>
-          {restructureMessage && (
-            <div style={{ marginBottom: '20px', padding: '10px', background: '#f8d7da', color: '#721c24', border: '1px solid #f5c6cb', borderRadius: '4px' }}>
-              <p>Reestructuración requerida para acomodar el nuevo elemento.</p>
-              <Button variant="contained" color="primary" onClick={restructureItems} style={{ marginRight: '10px' }}>
-                Reestructurar y Añadir Elemento
-              </Button>
-              <Button variant="outlined" color="secondary" onClick={handleManualIntervention}>
-                Proceder con la Intervención Manual
-              </Button>
-            </div>
-          )}
-          <Button variant="contained" color="primary" onClick={saveUpdatedScreen} style={{ marginRight: '10px' }}>
+        </div>
+        <div>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={saveUpdatedScreen}
+            startIcon={<SaveIcon />}
+            fullWidth
+          >
             Guardar Pantalla
           </Button>
-        </>
+          <Button
+            variant="outlined"
+            color="secondary"
+            onClick={() => navigate('/dashboard/screen-manager')}
+            startIcon={<ArrowBackIcon />}
+            fullWidth
+            style={{ marginTop: '10px' }}
+          >
+            Volver
+          </Button>
+        </div>
+      </Paper>
+      <div className="device-frame" style={{ marginLeft: '20px' }}>
+        <Box
+          className="screen"
+          style={{
+            width: `${screenSize.width}px`,
+            height: `${screenSize.height}px`,
+            border: '1px solid #000',
+            position: 'relative'
+          }}
+        >
+          {selectedItems.map((item) => (
+            <Draggable
+              key={item.id}
+              bounds="parent"
+              position={{ x: item.left, y: item.top }}
+              onStop={(event, { x, y }) => handleDrag(item.id, { x, y })}
+            >
+              <Box
+                className="draggable-item"
+                style={{
+                  width: `${item.width}px`,
+                  height: `${item.height}px`,
+                  position: 'absolute'
+                }}
+              >
+                {item.content_type === 'image' ? (
+                  <img src={item.image_url} alt="item" style={{ width: '100%', height: '100%' }} />
+                ) : (
+                  <div dangerouslySetInnerHTML={{ __html: item.content }} />
+                )}
+              </Box>
+            </Draggable>
+          ))}
+        </Box>
+      </div>
+      {restructureMessage && (
+        <div className="restructure-message" style={{ position: 'absolute', bottom: '20px', left: '20px', padding: '10px', background: '#f8d7da', color: '#721c24', border: '1px solid #f5c6cb', borderRadius: '4px' }}>
+          <p>Reestructuración requerida para acomodar el nuevo elemento.</p>
+          <Button variant="contained" color="primary" onClick={restructureItems} style={{ marginRight: '10px' }}>
+            Reestructurar y Añadir Elemento
+          </Button>
+          <Button variant="outlined" color="secondary" onClick={handleManualIntervention}>
+            Proceder con la Intervención Manual
+          </Button>
+        </div>
       )}
-    </Paper>
+      <SuccessModal open={modalOpen} handleClose={handleCloseModal} message={modalMessage} />
+    </div>
   );
 };
 

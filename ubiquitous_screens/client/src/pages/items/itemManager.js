@@ -15,7 +15,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import Button from '@mui/material/Button';
 import TablePagination from '@mui/material/TablePagination';
 import Chip from '@mui/material/Chip';
-import './itemManager.css';
+import './styles.css';
 
 const ItemManager = () => {
   const navigate = useNavigate();
@@ -86,8 +86,8 @@ const ItemManager = () => {
   };
 
   return (
-    <div className="item-manager-container">
-      <Paper elevation={3} className="filters-container">
+    <div className="screen-manager-container">
+      <div className="filters-container">
         <h2>Filtros</h2>
         <div className="filters">
           <TextField
@@ -97,7 +97,7 @@ const ItemManager = () => {
             value={filters.id}
             onChange={handleFilterChange}
             fullWidth
-            margin="normal"
+            style={{ marginBottom: '20px' }}
           />
           <TextField
             label="Nombre"
@@ -106,7 +106,7 @@ const ItemManager = () => {
             value={filters.name}
             onChange={handleFilterChange}
             fullWidth
-            margin="normal"
+            style={{ marginBottom: '20px' }}
           />
           <TextField
             label="Ancho"
@@ -115,7 +115,7 @@ const ItemManager = () => {
             value={filters.width}
             onChange={handleFilterChange}
             fullWidth
-            margin="normal"
+            style={{ marginBottom: '20px' }}
           />
           <TextField
             label="Alto"
@@ -124,7 +124,7 @@ const ItemManager = () => {
             value={filters.height}
             onChange={handleFilterChange}
             fullWidth
-            margin="normal"
+            style={{ marginBottom: '20px' }}
           />
           <TextField
             label="Etiquetas"
@@ -133,10 +133,9 @@ const ItemManager = () => {
             value={filters.tags}
             onChange={handleFilterChange}
             fullWidth
-            margin="normal"
           />
         </div>
-      </Paper>
+      </div>
       <div className="table-container">
         <div className="header">
           <h1>Gestión de Items</h1>

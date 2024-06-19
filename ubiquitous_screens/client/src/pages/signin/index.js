@@ -1,46 +1,35 @@
 import React, { useState } from 'react';
-import signinImg from './images/sign-up.png';
 import { Link, useNavigate } from 'react-router-dom';
-// UI components
-import Box from '@mui/material/Box';
-import Grid from '@mui/material/Grid';
-import TextField from '@mui/material/TextField';
-import Button from '@mui/material/Button';
-import Typography from '@mui/material/Typography'; // Importa Typography para mostrar el mensaje de error
+import { Box, Grid, TextField, Button, Typography } from '@mui/material';
 import { ThemeProvider } from '@mui/material/styles';
-// Components
 import PanelWithImage from '../../components/panel-with-image';
-// Others
 import enLocale from './locales/en.js';
 import Main from '../../themes/main';
 import routes from '../../routes';
-// Utils
 import httpClient from '../../utils/httpClient';
+import signinImg from './images/sign-up.png';
+import './signin.css';
 
-export const Signin = () => {
+export const Signin = ({ onLogin }) => {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState(''); // Estado para el mensaje de error
+  const [error, setError] = useState('');
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-
     try {
       const response = await httpClient.post('/login', {
-        user: {
-          email: email,
-          password: password,
-        }
+        user: { email, password }
       });
-      
-      const token = response.headers['authorization'].split(' ')[1]; // Suponiendo que el token viene en el header 'Authorization'
-      localStorage.setItem('token', token); // Guarda el token en el localStorage
-      setError(''); // Resetea el mensaje de error
-      navigate(routes.manageScreens); // Redirige a la pantalla principal
+      const token = response.headers['authorization'].split(' ')[1];
+      localStorage.setItem('token', token);
+      setError('');
+      onLogin();
+      navigate(routes.dashboard, { replace: true });
     } catch (error) {
       console.error('Error al iniciar sesión:', error);
-      setError('Invalid Email or Password'); // Establece el mensaje de error
+      setError('Invalid Email or Password');
     }
   };
 
@@ -51,39 +40,30 @@ export const Signin = () => {
           component="form"
           onSubmit={handleSubmit}
           pb="60px"
-          sx={{
-            '& .MuiTextField-root': { m: 1, width: '100%' }
-          }}
+          sx={{ '& .MuiTextField-root': { m: 1, width: '100%' } }}
           noValidate
           autoComplete="off"
         >
-          <TextField 
-            required 
-            id="email" 
-            label={`${enLocale.form.email}`} 
-            color="secondary" 
-            focused 
+          <TextField
+            required
+            id="email"
+            label={enLocale.form.email}
+            color="secondary"
+            focused
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
           <TextField
             required
             id="password"
-            label={`${enLocale.form.password}`}
+            label={enLocale.form.password}
             color="secondary"
             focused
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
-
-          <Button
-            type="submit"
-            variant="contained"
-            color="primary"
-            size="large"
-            sx={{ fontWeight: 'medium' }}
-          >
+          <Button type="submit" variant="contained" color="primary" size="large" sx={{ fontWeight: 'medium' }}>
             {enLocale.form.submit}
           </Button>
           {error && (
@@ -94,12 +74,8 @@ export const Signin = () => {
         </Box>
         <Box pb="60px">
           <Link
-            style={{
-              color: `${Main.palette.primary.main}`,
-              textDecoration: 'none',
-              fontWeight: 'bold'
-            }}
-            to={routes.screens}
+            style={{ color: `${Main.palette.primary.main}`, textDecoration: 'none', fontWeight: 'bold' }}
+            to={routes.signup}
           >
             {enLocale.forgotPassword}
           </Link>
