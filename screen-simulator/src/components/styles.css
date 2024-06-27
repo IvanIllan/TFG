@@ -1,0 +1,166 @@
+/* styles.css */
+.screen-manager-container {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 20px;
+}
+
+.filters-container {
+  width: 30%;
+  margin-right: 20px;
+}
+
+.filters {
+  padding: 20px;
+  border-radius: 4px;
+  color: white;
+}
+
+.filters .MuiTextField-root {
+  margin-bottom: 100px;
+}
+
+.table-container {
+  width: 65%;
+}
+
+.table-paper {
+  width: 100%;
+}
+
+.table-header {
+  background-color: #2196f3;
+  color: white;
+}
+
+.table-header th {
+  color: white;
+  font-weight: bold;
+}
+
+.add-button {
+  background-color: #2196f3;
+  color: white;
+}
+
+.button-container {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 20px;
+}
+
+@media (max-width: 768px) {
+  .screen-manager-container {
+    flex-direction: column;
+  }
+  .filters-container,
+  .table-container {
+    width: 100%;
+  }
+  .filters-container {
+    margin-right: 0;
+  }
+}
+
+.screen-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+}
+
+.screen-header {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+.screen-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.screen-inputs {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.device-frame {
+  position: absolute;
+  border: 16px solid #000;
+  background: #fff;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+  width: fit-content;
+  height: fit-content;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.screen {
+  position: relative;
+  border: none;
+  background-color: #f0f0f0;
+  overflow: hidden;
+}
+
+.draggable-item {
+  background-color: #fff;
+  border: 1px solid #000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: absolute;
+  font-size: 10px;
+  text-align: center;
+  overflow: hidden;
+}
+
+.draggable-item:hover {
+  transform: scale(1.05);
+}
+
+.container {
+  display: flex;
+  height: 100vh;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.sidebar {
+  width: 300px;
+  flex-shrink: 0;
+}
+
+.restructure-message {
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+  padding: 10px;
+  background: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+  border-radius: 4px;
+}
+
+.draggable-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  pointer-events: none;
+}
+
+.item-content {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  object-fit: contain;
+}

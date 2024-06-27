@@ -4,8 +4,9 @@ class ItemsController < ApplicationController
   def index
     factories = current_user.factories.pluck(:id)
     @items = Item.where(factory_id: factories)
-    render json: @items.map { |item| item.as_json.merge(image_url: url_for(item.image)) }
+    render json: @items.map { |item| item.as_json.merge(image_url: item.image.attached? ? url_for(item.image) : nil) }
   end
+
 
   def show
     @item = Item.find(params[:id])

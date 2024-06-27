@@ -62,7 +62,7 @@ const ItemManager = () => {
   });
 
   const handleEdit = (itemId) => {
-    navigate(`/update-item`, { state: { itemId } });
+    navigate(`/dashboard/update-item/${itemId}`);
   };
 
   const handleDelete = async (itemId) => {
@@ -143,7 +143,7 @@ const ItemManager = () => {
             variant="contained"
             color="primary"
             className="add-button"
-            onClick={() => navigate('/create-item')}
+            onClick={() => navigate('/dashboard/create-item')}
           >
             Añadir Nuevo Item
           </Button>

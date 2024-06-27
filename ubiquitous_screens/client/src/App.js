@@ -9,6 +9,8 @@ import ScreenManager from './pages/screens/screenManager';
 import ItemManager from './pages/items/itemManager';
 import UpdateScreen from './pages/screens/updateScreen';
 import CreateScreen from './pages/screens/createScreen';
+import CreateItem from './pages/items/createItem';
+import UpdateItem from './pages/items/updateItem';
 import { ThemeProvider } from '@mui/material/styles';
 import Main from './themes/main';
 import routes from './routes';
@@ -39,6 +41,8 @@ function App() {
             <Route path="screen-manager" element={<ScreenManager />} />
             <Route path="update-screen/:id" element={<UpdateScreen />} />
             <Route path="create-screen" element={<CreateScreen />} /> {/* Ruta de creación */}
+            <Route path="create-item" element={<CreateItem />} />
+            <Route path="update-item/:id" element={<UpdateItem />} />
           </Route>
           <Route
             path="*"
