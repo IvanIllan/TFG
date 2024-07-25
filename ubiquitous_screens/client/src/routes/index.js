@@ -4,6 +4,7 @@ export default {
   signin: '/signin',
   resetPassword: '/reset-password',
   screens: '/screens',
+  dashboard: '/dashboard',
   items: '/items',
   createScreen: '/create-screen',
   updateScreen: '/update-screen',

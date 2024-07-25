@@ -6,6 +6,7 @@ import Button from '@mui/material/Button';
 import Paper from '@mui/material/Paper';
 import Autocomplete from '@mui/material/Autocomplete';
 import Chip from '@mui/material/Chip';
+import httpClient from '../../utils/httpClient';
 import './styles.css';
 
 const CreateScreen = () => {
@@ -16,22 +17,21 @@ const CreateScreen = () => {
   const [restructureMessage, setRestructureMessage] = useState(false);
   const [itemToAdd, setItemToAdd] = useState(null);
   const [screens, setScreens] = useState([]);
+  const [screenName, setScreenName] = useState('');
+  const [macAddress, setMacAddress] = useState('');
+  const [factories, setFactories] = useState([]);
+  const [selectedFactory, setSelectedFactory] = useState(null);
 
   useEffect(() => {
     const fetchItems = async () => {
       try {
-        const response = {
-          data: [
-            { id: 1, width: 50, height: 50, text: 'Elemento 1' },
-            { id: 2, width: 100, height: 50, text: 'Elemento 2' },
-            { id: 3, width: 150, height: 100, text: 'Elemento 3' },
-            { id: 4, width: 200, height: 150, text: 'Elemento 4' },
-            { id: 5, width: 100, height: 100, text: 'Elemento 5' }
-          ]
-        };
-        setAvailableItems(response.data);
+        const itemsResponse = await httpClient.get('/items');
+        setAvailableItems(itemsResponse.data);
+
+        const factoriesResponse = await httpClient.get('/factories');
+        setFactories(factoriesResponse.data);
       } catch (error) {
-        console.error('Error fetching items:', error);
+        console.error('Error fetching items or factories:', error);
       }
     };
 
@@ -135,7 +135,7 @@ const CreateScreen = () => {
       allItems.sort((a, b) => a.width * a.height - b.width * b.height);
       for (let i = 0; i < allItems.length; i++) {
         for (let x = 0; x <= screenSize.width - allItems[i].width; x += 10) {
-          for (let y = 0; x <= screenSize.height - allItems[i].height; y += 10) {
+          for (let y = 0; y <= screenSize.height - allItems[i].height; y += 10) {
             const tempItem = { ...allItems[i], left: x, top: y };
             if (!checkCollision(tempItem, allItems.filter((_, index) => index !== i))) {
               allItems[i] = tempItem;
@@ -181,20 +181,27 @@ const CreateScreen = () => {
     setItemToAdd(null);
   };
 
-  const saveNewScreen = () => {
+  const saveNewScreen = async () => {
     const newScreen = {
-      id: screens.length + 1,
       name: `Pantalla ${screens.length + 1}`,
       width: screenSize.width,
       height: screenSize.height,
-      items: items.map(({ id, left, top }) => ({ id, left, top }))
+      mac: "123123asdawsd", // example mac address
+      factory_id: selectedFactory?.id, // Make sure this is set correctly
+      html_structure: items.map(({ id, left, top }) => ({ id, left, top }))
     };
-
-    setScreens(prevScreens => [...prevScreens, newScreen]);
-    setItems([]);
-    setSelectedItems([]);
-    setScreenSize({ width: 375, height: 667 });
-    alert('Nueva pantalla guardada.');
+  
+    try {
+      const response = await httpClient.post('/screens', { screen: newScreen });
+      setScreens(prevScreens => [...prevScreens, response.data]);
+      setItems([]);
+      setSelectedItems([]);
+      setScreenSize({ width: 375, height: 667 });
+      alert('Nueva pantalla guardada.');
+    } catch (error) {
+      console.error('Error creando la pantalla:', error);
+      alert('Error creando la pantalla.');
+    }
   };
 
   const exportLayout = () => {
@@ -220,7 +227,23 @@ const CreateScreen = () => {
     <div className="container">
       <Paper elevation={3} className="sidebar" style={{ padding: '20px', background: '#fff', height: 'calc(100vh - 64px)', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
         <div style={{ flexGrow: 1 }}>
-          <div className="screen-inputs" style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
+          <div className="screen-inputs" style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '20px' }}>
+            <TextField
+              label="Nombre de pantalla"
+              type="text"
+              name="name"
+              value={screenName}
+              onChange={(e) => setScreenName(e.target.value)}
+              fullWidth
+            />
+            <TextField
+              label="MAC Address"
+              type="text"
+              name="mac"
+              value={macAddress}
+              onChange={(e) => setMacAddress(e.target.value)}
+              fullWidth
+            />
             <TextField
               label="Ancho de pantalla"
               type="number"
@@ -239,11 +262,19 @@ const CreateScreen = () => {
               inputProps={{ min: 0 }}
               fullWidth
             />
+            <Autocomplete
+              options={factories}
+              getOptionLabel={(option) => option.name}
+              value={selectedFactory}
+              onChange={(event, value) => setSelectedFactory(value)}
+              renderInput={(params) => <TextField {...params} variant="outlined" label="Seleccionar Factory" />}
+              fullWidth
+            />
           </div>
           <Autocomplete
             multiple
             options={availableItems}
-            getOptionLabel={(option) => option.text}
+            getOptionLabel={(option) => option.name}
             value={availableItems.filter(item => selectedItems.includes(item.id))}
             onChange={handleAddItem}
             renderInput={(params) => <TextField {...params} variant="outlined" label="Seleccionar Elemento" />}
@@ -251,7 +282,7 @@ const CreateScreen = () => {
               value.map((option, index) => (
                 <Chip
                   key={option.id}
-                  label={option.text}
+                  label={option.name}
                   {...getTagProps({ index })}
                   onDelete={() => handleRemoveItem(option.id)}
                 />
@@ -303,7 +334,11 @@ const CreateScreen = () => {
                   height: `${item.height}px`,
                 }}
               >
-                {item.text}
+                {item.content_type === 'image' ? (
+                  <img src={item.image_url} alt="item" style={{ width: '100%', height: '100%' }} />
+                ) : (
+                  <div dangerouslySetInnerHTML={{ __html: item.content }} />
+                )}
               </Box>
             </Draggable>
           ))}

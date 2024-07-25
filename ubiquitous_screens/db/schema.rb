@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2024_06_06_235219) do
+ActiveRecord::Schema.define(version: 2024_06_08_172254) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -50,7 +50,7 @@ ActiveRecord::Schema.define(version: 2024_06_06_235219) do
   end
 
   create_table "factories", force: :cascade do |t|
-    t.string "address"
+    t.string "name"
     t.bigint "company_group_id", null: false
     t.bigint "user_id", null: false
     t.datetime "created_at", precision: 6, null: false
@@ -68,7 +68,7 @@ ActiveRecord::Schema.define(version: 2024_06_06_235219) do
     t.datetime "updated_at", precision: 6, null: false
     t.string "name", null: false
     t.text "content"
-    t.string "type", null: false
+    t.string "content_type"
     t.index ["factory_id"], name: "index_items_on_factory_id"
   end
 
